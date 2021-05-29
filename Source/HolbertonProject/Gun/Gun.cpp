@@ -5,6 +5,8 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "../HolbertonProject.h"
 
 // Sets default values
 AGun::AGun()
@@ -15,14 +17,27 @@ AGun::AGun()
 	GunMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMesh"));
 	GunMesh->SetupAttachment(GunRoot);
 
+	MuzzleSocketName = TEXT("MuzzleFlashSocket");
+
 	MaxRange = 5000.f;
 	Damage = 34.f;
 }
 
 void AGun::FtFire()
 {
-	UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, GunMesh, TEXT("MuzzleFlashSocket"));
-	UGameplayStatics::SpawnSoundAttached(MuzzleSound, GunMesh, TEXT("MuzzleFlashSocket"));
+	UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, GunMesh, MuzzleSocketName);
+	UGameplayStatics::SpawnSoundAttached(MuzzleSound, GunMesh, MuzzleSocketName);
+
+	// if (Bullet)
+	// {
+	// 	FVector MuzzleLocation = GunMesh->GetSocketLocation(MuzzleSocketName);
+	// 	UParticuleSystemComponent *BulletComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Bullet, MuzzleLocation);
+	// 	if (BulletComp)
+	// 	{
+	// 		BulletComp->SetVectorParameter("Bullet")
+	// 	}
+
+	// }
 
 	APawn *OwnerPawn = Cast<APawn>(GetOwner());
 	if (OwnerPawn)
@@ -40,7 +55,7 @@ void AGun::FtFire()
 
 			OwnerController->GetPlayerViewPoint(Location, Rotation);
 			End = Location + (Rotation.Vector() * MaxRange);
-			bHitSuccess = GetWorld()->LineTraceSingleByChannel(Hit, Location, End, ECollisionChannel::ECC_GameTraceChannel1);
+			bHitSuccess = GetWorld()->LineTraceSingleByChannel(Hit, Location, End, ECollisionChannel::COLLISION_WEAPON);
 			if (bHitSuccess)
 			{
 				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffect, Hit.Location, ShotDirection.Rotation());
@@ -62,7 +77,6 @@ void AGun::FtFire()
 	}
 }
 
-void AGun::FtFireEffect() 
+void AGun::FtFireEffect()
 {
-	
 }

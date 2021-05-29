@@ -30,6 +30,8 @@ private:
 	USkeletalMeshComponent *GunMesh;
 
 	UPROPERTY(EditAnywhere)
+	FName MuzzleSocketName;
+	UPROPERTY(EditAnywhere)
 	UParticleSystem *MuzzleFlash;
 	UPROPERTY(EditAnywhere)
 	USoundBase *MuzzleSound;
@@ -41,6 +43,9 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	UParticleSystem *ImpactBodyEffect;
+
+	UPROPERTY(EditAnywhere)
+	UParticleSystem *Bullet;
 
 	UPROPERTY(EditAnywhere)
 	float MaxRange;

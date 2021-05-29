@@ -5,7 +5,10 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Components/CapsuleComponent.h"
+#include "../HolbertonProject.h"
 #include "../Gun/Gun.h"
+#include "../HUD/SHealthComponent.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -21,6 +24,10 @@ ASCharacter::ASCharacter()
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 	CameraComp->SetupAttachment(SpringArmComp);
 
+	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
+
+	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
+
 	WalkingSpeed = 400.f;
 	RunningSpeed = 800.f;
 
@@ -28,8 +35,7 @@ ASCharacter::ASCharacter()
 	JumpMax = 1;
 	JumpHeight = 500.f;
 
-	MaxHealth = 100.f;;
-	Health = MaxHealth;
+
 }
 
 // Called when the game starts or when spawned
@@ -38,9 +44,11 @@ void ASCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Gun = GetWorld()->SpawnActor<AGun>(GunClass);
-	GetMesh()->HideBoneByName(TEXT("weapon_r"), EPhysBodyOp::PBO_None);
+	//GetMesh()->HideBoneByName(TEXT("weapon_r"), EPhysBodyOp::PBO_None);
 	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform , TEXT("WeaponSocket"));
 	Gun->SetOwner(this);
+
+	HealthComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
 }
 
 void ASCharacter::FtMoveForward(float Value) 
@@ -82,9 +90,19 @@ void ASCharacter::FtFire()
 	Gun->FtFire();
 }
 
-const bool ASCharacter::IsDead() 
+void ASCharacter::OnHealthChanged(USHealthComponent *InHealthComp, float Health, float HealthDelta, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser) 
 {
-	return Health <= 0;
+	if (Health <= 0.0f && !bDead)
+	{
+
+		bDead = true;
+		GetMovementComponent()->StopMovementImmediately();
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		DetachFromControllerPendingDestroy();
+
+		SetLifeSpan(10.0f);
+	}
 }
 
 // Called every frame
@@ -112,16 +130,3 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASCharacter::FtFire);
 }
-
-float ASCharacter::TakeDamage(float DamageAmount, struct FDamageEvent const &DamageEvent, class AController *EventInstigator, AActor *DamageCauser) 
-{
-	float DamageToApply;
-	
-	DamageToApply = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	DamageToApply = FMath::Min(Health, DamageToApply);
-	Health -= DamageToApply;
-	UE_LOG(LogTemp, Warning, TEXT("Health left: %f"), Health);
-
-	return DamageToApply;
-}
-

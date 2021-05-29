@@ -9,6 +9,7 @@
 class UCameraComponent;
 class USpringArmComponent;
 class AGun;
+class USHealthComponent;
 
 UCLASS()
 class HOLBERTONPROJECT_API ASCharacter : public ACharacter
@@ -60,14 +61,14 @@ protected:
 
 	void FtFire();
 
-	UPROPERTY(EditDefaultsOnly)
-	float MaxHealth;
-	UPROPERTY(EditDefaultsOnly)
-	float Health;
+	USHealthComponent *HealthComp;
+
+	UFUNCTION()
+	void OnHealthChanged(USHealthComponent *InHealthComp, float Health, float HealthDelta, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser);
 
 public:
-	UFUNCTION(BlueprintPure)
-	const bool IsDead();
+	UPROPERTY(BlueprintReadOnly, Category = "Player")
+	bool bDead;
 
 
 	// Called every frame
@@ -75,6 +76,4 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent) override;
-
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const &DamageEvent, class AController *EventInstigagor, AActor *DamageCauser) override;
 };
