@@ -13,4 +13,5 @@ void ACharacterPlayerController::BeginPlay()
     {
         HUD->AddToViewport();
     }
+    UE_LOG(LogTemp, Warning, TEXT("NULLWidget"));
 }

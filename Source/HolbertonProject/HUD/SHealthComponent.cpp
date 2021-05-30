@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "SHealthComponent.h"
 
 // Sets default values for this component's properties
@@ -8,7 +7,6 @@ USHealthComponent::USHealthComponent()
 {
 	DefaultHealth = 100.f;
 }
-
 
 // Called when the game starts
 void USHealthComponent::BeginPlay()
@@ -24,14 +22,11 @@ void USHealthComponent::BeginPlay()
 	Health = DefaultHealth;
 }
 
-void USHealthComponent::FtHandleTakeAnyDamage(AActor *DamageActor, float Damage, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser) 
+void USHealthComponent::FtHandleTakeAnyDamage(AActor *DamageActor, float Damage, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser)
 {
 	if (Damage > 0)
 	{
 		Health = FMath::Clamp(Health - Damage, 0.0f, DefaultHealth);
-		UE_LOG(LogTemp, Warning, TEXT("Health changed: %s"), *FString::SanitizeFloat(Health));
-
 		OnHealthChanged.Broadcast(this, Health, Damage, DamageType, InstigatedBy, DamageCauser);
 	}
 }
-

@@ -135,6 +135,11 @@ void ASCharacter::Tick(float DeltaTime)
 			bBlockSprint = false;
 		}
 	}
+	UE_LOG(LogTemp, Warning, TEXT("Health = %f"), HealthComp->Health);
+	if (HealthComp->Health > 0 && HealthComp->Health < HealthComp->DefaultHealth)
+	{
+		HealthComp->Health = FMath::ClampAngle(HealthComp->Health + 0.05, 0.0f, HealthComp->DefaultHealth);
+	}
 }
 
 // Called to bind functionality to input
