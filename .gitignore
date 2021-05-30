@@ -12,4 +12,9 @@ Saved
 *.suo
 *.xcodeproj
 *.xcworkspace
-*.uasset
+Content/SoulCity/
+Content/SoulCave/
+Content/SPACE_STATION/
+Content/ParagonWraith/
+Content/CrosshairsPack/
+Content/AssetPacks/

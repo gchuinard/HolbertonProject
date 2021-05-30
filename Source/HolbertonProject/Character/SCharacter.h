@@ -41,6 +41,15 @@ protected:
 	float WalkingSpeed;
 	UPROPERTY(EditAnywhere)
 	float RunningSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxStamina;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Stamina;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bRest;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bBlockSprint;
+
 
 	UFUNCTION()
 	void FtJump();
@@ -69,7 +78,6 @@ protected:
 public:
 	UPROPERTY(BlueprintReadOnly, Category = "Player")
 	bool bDead;
-
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

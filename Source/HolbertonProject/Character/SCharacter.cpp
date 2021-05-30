@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "SCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -13,7 +12,7 @@
 // Sets default values
 ASCharacter::ASCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
@@ -29,13 +28,15 @@ ASCharacter::ASCharacter()
 	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
 
 	WalkingSpeed = 400.f;
-	RunningSpeed = 800.f;
+	RunningSpeed = 1500.f;
+	MaxStamina = 1.f;
+	Stamina = MaxStamina;
+	bRest = true;
+	bBlockSprint = false;
 
 	JumpCount = 1;
 	JumpMax = 1;
 	JumpHeight = 500.f;
-
-
 }
 
 // Called when the game starts or when spawned
@@ -45,33 +46,45 @@ void ASCharacter::BeginPlay()
 
 	Gun = GetWorld()->SpawnActor<AGun>(GunClass);
 	//GetMesh()->HideBoneByName(TEXT("weapon_r"), EPhysBodyOp::PBO_None);
-	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform , TEXT("WeaponSocket"));
+	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
 	Gun->SetOwner(this);
 
 	HealthComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
 }
 
-void ASCharacter::FtMoveForward(float Value) 
+void ASCharacter::FtMoveForward(float Value)
 {
 	AddMovementInput(GetActorForwardVector() * Value);
 }
 
-void ASCharacter::FtMoveRight(float Value) 
+void ASCharacter::FtMoveRight(float Value)
 {
 	AddMovementInput(GetActorRightVector() * Value);
 }
 
-void ASCharacter::FtSprint() 
+void ASCharacter::FtSprint()
 {
-	GetCharacterMovement()->MaxWalkSpeed = RunningSpeed;
+	bRest = false;
+	UE_LOG(LogTemp, Warning, TEXT("StaminaSprint = %f"), Stamina);
+	if (Stamina > 0.01 && !bBlockSprint)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = RunningSpeed;
+		Stamina = FMath::ClampAngle(Stamina - 0.02f, 0.0f, MaxStamina);
+	}
+	else
+	{
+		GetCharacterMovement()->MaxWalkSpeed = WalkingSpeed;
+		bBlockSprint = true;
+	}
 }
 
-void ASCharacter::FtWalk() 
+void ASCharacter::FtWalk()
 {
+	bRest = true;
 	GetCharacterMovement()->MaxWalkSpeed = WalkingSpeed;
 }
 
-void ASCharacter::FtJump() 
+void ASCharacter::FtJump()
 {
 	if (JumpCount <= JumpMax)
 	{
@@ -80,21 +93,20 @@ void ASCharacter::FtJump()
 	}
 }
 
-void ASCharacter::Landed(const FHitResult &Hit) 
+void ASCharacter::Landed(const FHitResult &Hit)
 {
 	JumpCount = 1;
 }
 
-void ASCharacter::FtFire() 
+void ASCharacter::FtFire()
 {
 	Gun->FtFire();
 }
 
-void ASCharacter::OnHealthChanged(USHealthComponent *InHealthComp, float Health, float HealthDelta, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser) 
+void ASCharacter::OnHealthChanged(USHealthComponent *InHealthComp, float Health, float HealthDelta, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser)
 {
 	if (Health <= 0.0f && !bDead)
 	{
-
 		bDead = true;
 		GetMovementComponent()->StopMovementImmediately();
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -110,10 +122,23 @@ void ASCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (Stamina <= 0)
+	{
+		ASCharacter::FtWalk();
+	}
+	if (Stamina < MaxStamina && bRest)
+	{
+		Stamina = FMath::ClampAngle(Stamina + 0.003, 0.0f, MaxStamina);
+		UE_LOG(LogTemp, Warning, TEXT("Stamina = %f"), Stamina);
+		if (Stamina >= 0.25f)
+		{
+			bBlockSprint = false;
+		}
+	}
 }
 
 // Called to bind functionality to input
-void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void ASCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
@@ -125,7 +150,11 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASCharacter::FtJump);
 
-	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ASCharacter::FtSprint);
+	if (!bBlockSprint)
+	{
+		PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ASCharacter::FtSprint);
+		PlayerInputComponent->BindAction("Sprint", IE_Repeat, this, &ASCharacter::FtSprint);
+	}
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::FtWalk);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASCharacter::FtFire);
