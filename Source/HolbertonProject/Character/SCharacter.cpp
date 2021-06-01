@@ -27,7 +27,7 @@ ASCharacter::ASCharacter()
 
 	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
 
-	WalkingSpeed = 400.f;
+	WalkingSpeed = 250.f;
 	RunningSpeed = 1500.f;
 	MaxStamina = 1.f;
 	Stamina = MaxStamina;
@@ -65,7 +65,6 @@ void ASCharacter::FtMoveRight(float Value)
 void ASCharacter::FtSprint()
 {
 	bRest = false;
-	UE_LOG(LogTemp, Warning, TEXT("StaminaSprint = %f"), Stamina);
 	if (Stamina > 0.01 && !bBlockSprint)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = RunningSpeed;
@@ -129,13 +128,11 @@ void ASCharacter::Tick(float DeltaTime)
 	if (Stamina < MaxStamina && bRest)
 	{
 		Stamina = FMath::ClampAngle(Stamina + 0.003, 0.0f, MaxStamina);
-		UE_LOG(LogTemp, Warning, TEXT("Stamina = %f"), Stamina);
 		if (Stamina >= 0.25f)
 		{
 			bBlockSprint = false;
 		}
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Health = %f"), HealthComp->Health);
 	if (HealthComp->Health > 0 && HealthComp->Health < HealthComp->DefaultHealth)
 	{
 		HealthComp->Health = FMath::ClampAngle(HealthComp->Health + 0.05, 0.0f, HealthComp->DefaultHealth);
