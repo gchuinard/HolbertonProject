@@ -6,8 +6,6 @@
 #include "Gun.h"
 #include "ProjectileWeapon.generated.h"
 
-class UParticleSystem;
-
 /**
  * 
  */
@@ -16,10 +14,6 @@ class HOLBERTONPROJECT_API AProjectileWeapon : public AGun
 {
 	GENERATED_BODY()
 
-	protected:
-
+protected:
 	virtual void FtFire() override;
-
-	UPROPERTY(EditDefaultsOnly, Category = "ProjectileWeapon2")
-	TSubclassOf<AActor>	ProjectileClass2;
 };

@@ -54,55 +54,13 @@ void AGun::FtFire()
 		{
 			FVector EyeLocation;
 			FRotator EyeRotation;
-			FVector ShotDirection;
-
-			FVector TraceEnd;
 
 			OwnerController->GetPlayerViewPoint(EyeLocation, EyeRotation);
-			ShotDirection = EyeRotation.Vector();
-			TraceEnd = EyeLocation + (EyeRotation.Vector() * MaxRange);
 
 			FVector SpawnLocation = ProjectileSpawnPoint->GetComponentLocation();
-			FRotator SpawnRotation = ProjectileSpawnPoint->GetComponentRotation();
 			AProjectileBase *TempProjectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass, SpawnLocation, EyeRotation);
 
 			TempProjectile->SetOwner(this);
-		}
-		if (OwnerController)
-		{
-
-			// FVector EyeLocation;
-			// FRotator EyeRotation;
-			// FVector ShotDirection;
-
-			// FHitResult Hit;
-			// bool bHitSuccess;
-			// AActor *HitActor;
-
-			// FVector TraceEnd;
-
-			// OwnerController->GetPlayerViewPoint(EyeLocation, EyeRotation);
-			// ShotDirection = EyeRotation.Vector();
-			// TraceEnd = EyeLocation + (EyeRotation.Vector() * MaxRange);
-			// bHitSuccess = GetWorld()->LineTraceSingleByChannel(Hit, EyeLocation, TraceEnd, ECollisionChannel::COLLISION_WEAPON);
-
-			// if (bHitSuccess && ImpactEffect)
-			// {
-			// 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffect, Hit.Location, ShotDirection.Rotation());
-			// 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSound, Hit.Location);
-			// 	ShotDirection = -EyeRotation.Vector();
-
-			// 	HitActor = Hit.GetActor();
-			// 	if (HitActor)
-			// 	{
-			// 		FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
-			// 		HitActor->TakeDamage(Damage, DamageEvent, OwnerController, this);
-			// 	}
-			// }
-			// if (HasAuthority())
-			// {
-			// 	HitScanTrace.TraceTo = TraceEnd;
-			// }
 		}
 	}
 }

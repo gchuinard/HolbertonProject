@@ -51,6 +51,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bBlockSprint;
 
+	int numb = 3;
 
 	UFUNCTION()
 	void FtJump();

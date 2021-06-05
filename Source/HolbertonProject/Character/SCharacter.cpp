@@ -44,18 +44,15 @@ ASCharacter::ASCharacter()
 
 	GrenadeDelay = 1.f;
 
-	bGun = true;
+	bGun = false;
 }
 
 // Called when the game starts or when spawned
 void ASCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	Gun = GetWorld()->SpawnActor<AGun>(GunClass);
-	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
-	Gun->SetOwner(this);
-	
+	GetMesh()->HideBoneByName(TEXT("weapon_r"), EPhysBodyOp::PBO_None);
+	FtSwitchWeapon();
 	HealthComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
 }
 
@@ -106,11 +103,16 @@ void ASCharacter::Landed(const FHitResult &Hit)
 
 void ASCharacter::FtFire()
 {
+	UE_LOG(LogTemp, Warning, TEXT("Fire"));
 	Gun->FtFire();
 }
 
 void ASCharacter::FtSwitchWeapon()
 {
+	if (Gun)
+	{
+		Gun->Destroy();
+	}
 	if (bGun)
 	{
 		Gun = GetWorld()->SpawnActor<AProjectileWeapon>(ProjectileWeaponClass);
@@ -122,6 +124,7 @@ void ASCharacter::FtSwitchWeapon()
 		bGun = true;
 	}
 	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
+	Gun->SetOwner(this);
 }
 
 void ASCharacter::OnHealthChanged(USHealthComponent *InHealthComp, float Health, float HealthDelta, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser)

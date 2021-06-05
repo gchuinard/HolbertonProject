@@ -22,6 +22,8 @@ AProjectileBase::AProjectileBase()
 
 	ParticleTrail = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Particle Trail"));
 	ParticleTrail->SetupAttachment(RootComponent);
+
+	Rifle = true;
 }
 
 // Called when the game starts or when spawned
@@ -39,12 +41,18 @@ void AProjectileBase::OnHit(UPrimitiveComponent *HitComp, AActor *OtherActor, UP
 	{
 		if (OtherActor && OtherActor != this && OtherActor != MyOwner)
 		{
-			UGameplayStatics::ApplyDamage(OtherActor, Damage, MyOwner->GetInstigatorController(), this, DamageType);
+			if (Rifle)
+			{
+				UGameplayStatics::ApplyDamage(OtherActor, Damage, MyOwner->GetInstigatorController(), this, DamageType);
+			}
+			else
+			{
+				UGameplayStatics::ApplyRadialDamage(GetWorld(), Damage, GetActorLocation(), DamageRadius, DamageType, TArray< AActor *>(), this, MyOwner->GetInstigatorController(), false,  ECollisionChannel::ECC_Visibility);
+			}
 			UGameplayStatics::SpawnEmitterAtLocation(this, HitParticle, GetActorLocation());
 			UGameplayStatics::PlaySoundAtLocation(this, HitSound, GetActorLocation());
 			GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(HitShake);
 			Destroy();
-			UE_LOG(LogTemp, Warning, TEXT("Destroye"));
 		}
 	}
 }

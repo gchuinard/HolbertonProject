@@ -39,8 +39,6 @@ public:
 	void ServerFire();
 
 protected:
-	// UFUNCTION(BlueprintCallable, Category = "Weapon")
-	// void FtFireEffect();
 
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent *GunRoot;

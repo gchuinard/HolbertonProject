@@ -22,7 +22,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<UDamageType> DamageType;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Move", meta = (AllowPrivateAccess = "true"))
-	float MovementSpeed = 25000.0f;
+	float MovementSpeed = 15000.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damage", meta = (AllowPrivateAccess = " true"))
 	float Damage = 34.0f;
 
@@ -50,5 +50,11 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	bool Rifle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	float DamageRadius;
 
 };
