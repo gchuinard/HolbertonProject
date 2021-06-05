@@ -6,50 +6,79 @@
 #include "GameFramework/Actor.h"
 #include "Gun.generated.h"
 
+class USkeletalMeshComponent;
 class UDamageType;
+class UParticleSystem;
+class AProjectileBase;
+
+USTRUCT()
+struct FHitScanTrace
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY()
+	FVector_NetQuantize TraceFrom;
+	UPROPERTY()
+	FVector_NetQuantize TraceTo;
+};
 
 UCLASS()
 class HOLBERTONPROJECT_API AGun : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AGun();
 
-	void FtFire();
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	virtual void FtFire();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerFire();
 
 protected:
-	void FtFireEffect();
+	// UFUNCTION(BlueprintCallable, Category = "Weapon")
+	// void FtFireEffect();
 
-private:
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent *GunRoot;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category = "Component")
 	USkeletalMeshComponent *GunMesh;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	FName MuzzleSocketName;
-	UPROPERTY(EditAnywhere)
-	UParticleSystem *MuzzleFlash;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+	UParticleSystem *MuzzleEffect;
 	UPROPERTY(EditAnywhere)
 	USoundBase *MuzzleSound;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	USceneComponent* ProjectileSpawnPoint;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projectile Type", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AProjectileBase> ProjectileClass;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	FName ShotSocketName;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+	UParticleSystem *ShotEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	UParticleSystem *ImpactEffect;
 	UPROPERTY(EditAnywhere)
 	USoundBase *ImpactSound;
-
-	UPROPERTY(EditAnywhere)
-	UParticleSystem *ImpactBodyEffect;
-
-	UPROPERTY(EditAnywhere)
-	UParticleSystem *Bullet;
 
 	UPROPERTY(EditAnywhere)
 	float MaxRange;
 
 	UPROPERTY(EditAnywhere)
 	float Damage;
+
+	UPROPERTY(ReplicatedUsing=OnRep_HitScanTrace)
+	FHitScanTrace HitScanTrace;
+
+	UFUNCTION()
+	void OnRep_HitScanTrace();
 };

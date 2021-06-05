@@ -9,6 +9,7 @@
 class UCameraComponent;
 class USpringArmComponent;
 class AGun;
+class AProjectileWeapon;
 class USHealthComponent;
 
 UCLASS()
@@ -64,11 +65,17 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AGun> GunClass;
-
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AProjectileWeapon> ProjectileWeaponClass;
+	UPROPERTY(Replicated)
 	AGun *Gun;
 
+	bool bGun;
+
+
 	void FtFire();
+
+	// void FtSwitchWeapon();
 
 	USHealthComponent *HealthComp;
 
@@ -78,6 +85,12 @@ protected:
 public:
 	UPROPERTY(BlueprintReadOnly, Category = "Player")
 	bool bDead;
+
+	UFUNCTION(BlueprintCallable, Category = "Grenade")
+	void FtGrenadeDelay();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float GrenadeDelay;
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

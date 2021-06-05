@@ -7,6 +7,9 @@
 #include "DrawDebugHelpers.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "../HolbertonProject.h"
+#include "Net/UnrealNetwork.h"
+#include "UObject/Object.h"
+#include "../Actor/ProjectileBase.h"
 
 // Sets default values
 AGun::AGun()
@@ -17,66 +20,110 @@ AGun::AGun()
 	GunMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMesh"));
 	GunMesh->SetupAttachment(GunRoot);
 
-	MuzzleSocketName = TEXT("MuzzleFlashSocket");
+	MuzzleSocketName = TEXT("MuzzleSocket");
+	ShotSocketName = TEXT("ShotSocket");
 
 	MaxRange = 5000.f;
 	Damage = 34.f;
+
+	ProjectileSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("Projectile Spawn Point"));
+	ProjectileSpawnPoint->SetupAttachment(GunMesh);
+
+	SetReplicates(true);
 }
 
 void AGun::FtFire()
 {
-	UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, GunMesh, MuzzleSocketName);
-	UGameplayStatics::SpawnSoundAttached(MuzzleSound, GunMesh, MuzzleSocketName);
-
-	// if (Bullet)
-	// {
-	// 	FVector MuzzleLocation = GunMesh->GetSocketLocation(MuzzleSocketName);
-	// 	UParticuleSystemComponent *BulletComp = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), Bullet, MuzzleLocation);
-	// 	if (BulletComp)
-	// 	{
-	// 		BulletComp->SetVectorParameter("Bullet")
-	// 	}
-
-	// }
+	if (!HasAuthority())
+	{
+		ServerFire();
+	}
+	if (MuzzleEffect && MuzzleSound && ShotEffect)
+	{
+		UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, GunMesh, MuzzleSocketName);
+		UGameplayStatics::SpawnEmitterAttached(ShotEffect, GunMesh, ShotSocketName);
+		UGameplayStatics::SpawnSoundAttached(MuzzleSound, GunMesh, MuzzleSocketName);
+	}
 
 	APawn *OwnerPawn = Cast<APawn>(GetOwner());
 	if (OwnerPawn)
 	{
 		AController *OwnerController = OwnerPawn->GetController();
+
+		if (OwnerController && ProjectileClass)
+		{
+			FVector EyeLocation;
+			FRotator EyeRotation;
+			FVector ShotDirection;
+
+			FVector TraceEnd;
+
+			OwnerController->GetPlayerViewPoint(EyeLocation, EyeRotation);
+			ShotDirection = EyeRotation.Vector();
+			TraceEnd = EyeLocation + (EyeRotation.Vector() * MaxRange);
+
+			FVector SpawnLocation = ProjectileSpawnPoint->GetComponentLocation();
+			FRotator SpawnRotation = ProjectileSpawnPoint->GetComponentRotation();
+			AProjectileBase *TempProjectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass, SpawnLocation, SpawnRotation);
+
+			TempProjectile->SetOwner(this);
+		}
 		if (OwnerController)
 		{
-			FVector Location;
-			FRotator Rotation;
-			FHitResult Hit;
-			bool bHitSuccess;
-			FVector ShotDirection;
-			AActor *HitActor;
-			FVector End;
 
-			OwnerController->GetPlayerViewPoint(Location, Rotation);
-			End = Location + (Rotation.Vector() * MaxRange);
-			bHitSuccess = GetWorld()->LineTraceSingleByChannel(Hit, Location, End, ECollisionChannel::COLLISION_WEAPON);
-			if (bHitSuccess)
-			{
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffect, Hit.Location, ShotDirection.Rotation());
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSound, Hit.Location);
-				ShotDirection = -Rotation.Vector();
+			// FVector EyeLocation;
+			// FRotator EyeRotation;
+			// FVector ShotDirection;
 
-				HitActor = Hit.GetActor();
-				if (HitActor)
-				{
-					FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
-					HitActor->TakeDamage(Damage, DamageEvent, OwnerController, this);
-				}
-				else
-				{
-					UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactBodyEffect, Hit.Location, ShotDirection.Rotation());
-				}
-			}
+			// FHitResult Hit;
+			// bool bHitSuccess;
+			// AActor *HitActor;
+
+			// FVector TraceEnd;
+
+			// OwnerController->GetPlayerViewPoint(EyeLocation, EyeRotation);
+			// ShotDirection = EyeRotation.Vector();
+			// TraceEnd = EyeLocation + (EyeRotation.Vector() * MaxRange);
+			// bHitSuccess = GetWorld()->LineTraceSingleByChannel(Hit, EyeLocation, TraceEnd, ECollisionChannel::COLLISION_WEAPON);
+
+			// if (bHitSuccess && ImpactEffect)
+			// {
+			// 	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffect, Hit.Location, ShotDirection.Rotation());
+			// 	UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSound, Hit.Location);
+			// 	ShotDirection = -EyeRotation.Vector();
+
+			// 	HitActor = Hit.GetActor();
+			// 	if (HitActor)
+			// 	{
+			// 		FPointDamageEvent DamageEvent(Damage, Hit, ShotDirection, nullptr);
+			// 		HitActor->TakeDamage(Damage, DamageEvent, OwnerController, this);
+			// 	}
+			// }
+			// if (HasAuthority())
+			// {
+			// 	HitScanTrace.TraceTo = TraceEnd;
+			// }
 		}
 	}
 }
 
-void AGun::FtFireEffect()
+void AGun::OnRep_HitScanTrace()
 {
+}
+
+void AGun::ServerFire_Implementation()
+{
+	FtFire();
+}
+
+bool AGun::ServerFire_Validate()
+{
+	return true;
+}
+
+void AGun::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME_CONDITION(AGun, HitScanTrace, COND_SkipOwner);
 }

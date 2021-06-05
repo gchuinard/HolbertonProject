@@ -4,10 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Particles/ParticleSystem.h"
 #include "SIATrackerBot.generated.h"
 
 
 class USHealthComponent;
+class USphereComponent;
 
 UCLASS()
 class HOLBERTONPROJECT_API ASIATrackerBot : public APawn
@@ -28,29 +30,50 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	USHealthComponent *HealthComp;
 
+	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
+	USphereComponent *SphereComp;
+
 	UFUNCTION()
 	void FtHandleTakeDamage(USHealthComponent *InHealthComp, float Health, float HealthDelta, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser);
 
 	FVector GetNextPathPoint();
-
 	FVector NextPathPoint;
-
 	UPROPERTY(EditDefaultsOnly, Category="TrackerBot")
 	float MovementForce;
-
 	UPROPERTY(EditDefaultsOnly, Category="TrackerBot")
 	bool bUseVelocityChange;
-	
 	UPROPERTY(EditDefaultsOnly, Category="TrackerBot")
 	float RequiredDistanceToTarget;
+	FVector ForceDirection;
 
 	UMaterialInstanceDynamic *MatInst;
 
 	bool bshot;
-	FVector ForceDirection;
+
+
+	void FtSelfDestruct();
+	UPROPERTY(EditDefaultsOnly, Category="TrackerBot")
+	UParticleSystem *ExplosionEffect;
+	bool bExploded;
+	UPROPERTY(EditDefaultsOnly, Category="TrackerBot")
+	float ExplosionRadius;
+	UPROPERTY(EditDefaultsOnly, Category="TrackerBot")
+	float ExplosionDamage;
+
+	FTimerHandle TimerHandle_SelfDamage;
+	bool bStartedSelfDestruction;
+
+	void DamageSelf();
+
+	UPROPERTY(EditAnywhere)
+	USoundBase *ExplosionSound;
+	UPROPERTY(EditAnywhere)
+	USoundBase *BeepSound;
+
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void NotifyActorBeginOverlap(AActor *OtherActor) override;
 };

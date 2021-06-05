@@ -7,7 +7,9 @@
 #include "Components/CapsuleComponent.h"
 #include "../HolbertonProject.h"
 #include "../Gun/Gun.h"
+#include "../Gun/ProjectileWeapon.h"
 #include "../HUD/SHealthComponent.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -26,6 +28,8 @@ ASCharacter::ASCharacter()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
 
 	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
+	HealthComp->DefaultHealth = 100.f;
+	HealthComp->Health = HealthComp->DefaultHealth;
 
 	WalkingSpeed = 250.f;
 	RunningSpeed = 1500.f;
@@ -37,6 +41,10 @@ ASCharacter::ASCharacter()
 	JumpCount = 1;
 	JumpMax = 1;
 	JumpHeight = 500.f;
+
+	GrenadeDelay = 1.f;
+
+	bGun = true;
 }
 
 // Called when the game starts or when spawned
@@ -45,10 +53,9 @@ void ASCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Gun = GetWorld()->SpawnActor<AGun>(GunClass);
-	//GetMesh()->HideBoneByName(TEXT("weapon_r"), EPhysBodyOp::PBO_None);
 	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
 	Gun->SetOwner(this);
-
+	
 	HealthComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
 }
 
@@ -102,6 +109,25 @@ void ASCharacter::FtFire()
 	Gun->FtFire();
 }
 
+// void ASCharacter::FtSwitchWeapon()
+// {
+// 	if (Gun)
+// 	{
+// 		Gun->Destroy();
+// 	}
+// 	if (bGun)
+// 	{
+// 		Gun = GetWorld()->SpawnActor<AProjectileWeapon>(ProjectileWeaponClass);
+// 		bGun = false;
+// 	}
+// 	else
+// 	{
+// 		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
+// 		bGun = true;
+// 	}
+// 	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
+// }
+
 void ASCharacter::OnHealthChanged(USHealthComponent *InHealthComp, float Health, float HealthDelta, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser)
 {
 	if (Health <= 0.0f && !bDead)
@@ -113,6 +139,18 @@ void ASCharacter::OnHealthChanged(USHealthComponent *InHealthComp, float Health,
 		DetachFromControllerPendingDestroy();
 
 		SetLifeSpan(10.0f);
+	}
+}
+
+void ASCharacter::FtGrenadeDelay()
+{
+	if (GrenadeDelay < 3)
+	{
+		GrenadeDelay += 1;
+	}
+	else
+	{
+		GrenadeDelay = 1;
 	}
 }
 
@@ -133,7 +171,7 @@ void ASCharacter::Tick(float DeltaTime)
 			bBlockSprint = false;
 		}
 	}
-	if (HealthComp->Health > 0 && HealthComp->Health < HealthComp->DefaultHealth)
+	if (!bDead && HealthComp->Health < HealthComp->DefaultHealth)
 	{
 		HealthComp->Health = FMath::ClampAngle(HealthComp->Health + 0.05, 0.0f, HealthComp->DefaultHealth);
 	}
@@ -160,4 +198,15 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputComponen
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::FtWalk);
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASCharacter::FtFire);
+
+	PlayerInputComponent->BindAction("GrenadeDelay", IE_Pressed, this, &ASCharacter::FtGrenadeDelay);
+
+	// PlayerInputComponent->BindAction("SwitchWeapon", IE_Pressed, this, &ASCharacter::FtSwitchWeapon);
+}
+
+void ASCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ASCharacter, Gun);
 }
