@@ -38,12 +38,12 @@ void AGun::FtFire()
 	{
 		ServerFire();
 	}
-	if (MuzzleEffect && MuzzleSound && ShotEffect)
+	if (MuzzleEffect && MuzzleSound)
 	{
 		UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, GunMesh, MuzzleSocketName);
-		UGameplayStatics::SpawnEmitterAttached(ShotEffect, GunMesh, ShotSocketName);
 		UGameplayStatics::SpawnSoundAttached(MuzzleSound, GunMesh, MuzzleSocketName);
 	}
+
 
 	APawn *OwnerPawn = Cast<APawn>(GetOwner());
 	if (OwnerPawn)
@@ -64,7 +64,7 @@ void AGun::FtFire()
 
 			FVector SpawnLocation = ProjectileSpawnPoint->GetComponentLocation();
 			FRotator SpawnRotation = ProjectileSpawnPoint->GetComponentRotation();
-			AProjectileBase *TempProjectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass, SpawnLocation, SpawnRotation);
+			AProjectileBase *TempProjectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass, SpawnLocation, EyeRotation);
 
 			TempProjectile->SetOwner(this);
 		}

@@ -109,24 +109,20 @@ void ASCharacter::FtFire()
 	Gun->FtFire();
 }
 
-// void ASCharacter::FtSwitchWeapon()
-// {
-// 	if (Gun)
-// 	{
-// 		Gun->Destroy();
-// 	}
-// 	if (bGun)
-// 	{
-// 		Gun = GetWorld()->SpawnActor<AProjectileWeapon>(ProjectileWeaponClass);
-// 		bGun = false;
-// 	}
-// 	else
-// 	{
-// 		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
-// 		bGun = true;
-// 	}
-// 	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
-// }
+void ASCharacter::FtSwitchWeapon()
+{
+	if (bGun)
+	{
+		Gun = GetWorld()->SpawnActor<AProjectileWeapon>(ProjectileWeaponClass);
+		bGun = false;
+	}
+	else
+	{
+		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
+		bGun = true;
+	}
+	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
+}
 
 void ASCharacter::OnHealthChanged(USHealthComponent *InHealthComp, float Health, float HealthDelta, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser)
 {
@@ -201,7 +197,7 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputComponen
 
 	PlayerInputComponent->BindAction("GrenadeDelay", IE_Pressed, this, &ASCharacter::FtGrenadeDelay);
 
-	// PlayerInputComponent->BindAction("SwitchWeapon", IE_Pressed, this, &ASCharacter::FtSwitchWeapon);
+	PlayerInputComponent->BindAction("SwitchWeapon", IE_Pressed, this, &ASCharacter::FtSwitchWeapon);
 }
 
 void ASCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const

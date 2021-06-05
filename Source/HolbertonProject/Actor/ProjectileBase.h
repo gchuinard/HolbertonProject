@@ -22,7 +22,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<UDamageType> DamageType;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Move", meta = (AllowPrivateAccess = "true"))
-	float MovementSpeed = 1000.0f;
+	float MovementSpeed = 25000.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Damage", meta = (AllowPrivateAccess = " true"))
 	float Damage = 34.0f;
 
@@ -34,8 +34,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = "Effects")
 	USoundBase* HitSound;
-	UPROPERTY(EditAnywhere, Category = "Effects")
-	USoundBase* MuzzleSound;
 
 	UPROPERTY(EditAnywhere, Category = "Effects")
 	TSubclassOf<UMatineeCameraShake> HitShake;

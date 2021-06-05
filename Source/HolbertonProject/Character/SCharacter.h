@@ -75,7 +75,7 @@ protected:
 
 	void FtFire();
 
-	// void FtSwitchWeapon();
+	void FtSwitchWeapon();
 
 	USHealthComponent *HealthComp;
 
