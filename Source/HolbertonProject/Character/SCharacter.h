@@ -51,8 +51,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bBlockSprint;
 
-	int numb = 3;
-
 	UFUNCTION()
 	void FtJump();
 	UPROPERTY()
@@ -91,6 +89,17 @@ protected:
 
 	UFUNCTION()
 	void OnHealthChanged(USHealthComponent *InHealthComp, float Health, float HealthDelta, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser);
+
+	UPROPERTY(EditAnywhere, Category = "Player")
+	TSubclassOf<UMatineeCameraShake> HitShake;
+	UPROPERTY(EditAnywhere, Category = "Player")
+	USoundBase* HitSound;
+	UPROPERTY(EditAnywhere, Category = "Player")
+	USoundBase* HeavyHitSound;
+
+	UPROPERTY(EditAnywhere, Category = "Player")
+	USoundBase* JumpSound;
+
 
 public:
 	UPROPERTY(BlueprintReadOnly, Category = "Player")

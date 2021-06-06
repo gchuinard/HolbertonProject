@@ -1,15 +1,18 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "SCharacter.h"
+
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
+
 #include "../HolbertonProject.h"
 #include "../Gun/Gun.h"
 #include "../Gun/ProjectileWeapon.h"
 #include "../HUD/SHealthComponent.h"
-#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -38,7 +41,7 @@ ASCharacter::ASCharacter()
 	bRest = true;
 	bBlockSprint = false;
 
-	JumpCount = 1;
+	JumpCount = 0;
 	JumpMax = 1;
 	JumpHeight = 500.0f;
 
@@ -91,8 +94,12 @@ void ASCharacter::FtWalk()
 
 void ASCharacter::FtJump()
 {
-	if (JumpCount <= JumpMax)
+	if (JumpCount < JumpMax)
 	{
+		if (JumpSound)
+		{
+			UGameplayStatics::SpawnSoundAtLocation(this, JumpSound, GetActorLocation());
+		}
 		ASCharacter::LaunchCharacter(FVector(0, 0, JumpHeight), false, true);
 		JumpCount++;
 	}
@@ -100,7 +107,7 @@ void ASCharacter::FtJump()
 
 void ASCharacter::Landed(const FHitResult &Hit)
 {
-	JumpCount = 1;
+	JumpCount = 0;
 }
 
 void ASCharacter::FtFire()
@@ -128,7 +135,7 @@ void ASCharacter::FtSwitchWeapon()
 	Gun->SetOwner(this);
 }
 
-void ASCharacter::FtZoom() 
+void ASCharacter::FtZoom()
 {
 	if (bZoom)
 	{
@@ -142,6 +149,18 @@ void ASCharacter::FtZoom()
 
 void ASCharacter::OnHealthChanged(USHealthComponent *InHealthComp, float Health, float HealthDelta, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser)
 {
+	if (HitShake && !bDead)
+	{
+		if (HitSound && Health > 50.0f)
+		{
+			UGameplayStatics::SpawnSoundAtLocation(this, HitSound, GetActorLocation());
+		}
+		else if (HeavyHitSound && Health < 50.0f)
+		{
+			UGameplayStatics::SpawnSoundAtLocation(this, HeavyHitSound, GetActorLocation());
+		}
+		GetWorld()->GetFirstPlayerController()->ClientStartCameraShake(HitShake);
+	}
 	if (Health <= 0.0f && !bDead)
 	{
 		bDead = true;
@@ -158,7 +177,6 @@ void ASCharacter::OnHealthChanged(USHealthComponent *InHealthComp, float Health,
 void ASCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 
 	float TargetFOV = bZoom ? ZoomFOV : DefaultFOV;
 
