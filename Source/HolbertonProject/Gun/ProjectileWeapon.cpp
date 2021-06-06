@@ -8,47 +8,14 @@
 #include "Net/UnrealNetwork.h"
 #include "../Actor/ProjectileBase.h"
 
-// void AProjectileWeapon::FtFire()
-// {
-//     APawn *OwnerPawn = Cast<APawn>(GetOwner());
-//     if (OwnerPawn)
-//     {
-//         AController *OwnerController = OwnerPawn->GetController();
-//         if (OwnerController && ProjectileClass2)
-//         {
-//             FVector EyeLocation;
-//             FRotator EyeRotation;
-
-//             FVector MuzzleLocation;
-
-//             FActorSpawnParameters SpawnParams;
-//             if (MuzzleEffect && MuzzleSound)
-//             {
-//                 UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, GunMesh, MuzzleSocketName);
-//                 UGameplayStatics::SpawnSoundAttached(MuzzleSound, GunMesh, MuzzleSocketName);
-//             }
-//             MuzzleLocation = GunMesh->GetSocketLocation(MuzzleSocketName);
-//             SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-//             OwnerController->GetPlayerViewPoint(EyeLocation, EyeRotation);
-//             GetWorld()->SpawnActor<AActor>(ProjectileClass2, MuzzleLocation, EyeRotation, SpawnParams);
-//         }
-//     }
-// }
-
-
 void AProjectileWeapon::FtFire()
 {
 	if (!HasAuthority())
 	{
 		ServerFire();
 	}
-	if (MuzzleEffect && MuzzleSound)
-	{
-		UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, GunMesh, MuzzleSocketName);
-		UGameplayStatics::SpawnSoundAttached(MuzzleSound, GunMesh, MuzzleSocketName);
-	}
 
+	FtFireEffect();
 
 	APawn *OwnerPawn = Cast<APawn>(GetOwner());
 	if (OwnerPawn)

@@ -79,4 +79,9 @@ protected:
 
 	UFUNCTION()
 	void OnRep_HitScanTrace();
+
+	void FtFireEffect();
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<UCameraShakeBase> FireCamShake;
 };

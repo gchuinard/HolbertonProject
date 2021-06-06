@@ -78,6 +78,15 @@ protected:
 
 	void FtSwitchWeapon();
 
+	bool bZoom;
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	float ZoomFOV;
+	UPROPERTY(EditDefaultsOnly, Category = "Player", meta = (ClampMin = 0.1f, ClampMax = 100.0f))
+	float ZoomInterpSpeed;
+	float DefaultFOV;
+
+	void FtZoom();
+
 	USHealthComponent *HealthComp;
 
 	UFUNCTION()
@@ -86,12 +95,6 @@ protected:
 public:
 	UPROPERTY(BlueprintReadOnly, Category = "Player")
 	bool bDead;
-
-	UFUNCTION(BlueprintCallable, Category = "Grenade")
-	void FtGrenadeDelay();
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float GrenadeDelay;
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

@@ -38,13 +38,8 @@ void AGun::FtFire()
 	{
 		ServerFire();
 	}
-	if (MuzzleEffect && MuzzleSound)
-	{
-		UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, GunMesh, MuzzleSocketName);
-		UGameplayStatics::SpawnSoundAttached(MuzzleSound, GunMesh, MuzzleSocketName);
-	}
 
-
+	FtFireEffect();
 	APawn *OwnerPawn = Cast<APawn>(GetOwner());
 	if (OwnerPawn)
 	{
@@ -61,6 +56,26 @@ void AGun::FtFire()
 			AProjectileBase *TempProjectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass, SpawnLocation, EyeRotation);
 
 			TempProjectile->SetOwner(this);
+		}
+	}
+}
+
+void AGun::FtFireEffect()
+{
+	if (MuzzleEffect && MuzzleSound)
+	{
+		UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, GunMesh, MuzzleSocketName);
+		UGameplayStatics::SpawnSoundAttached(MuzzleSound, GunMesh, MuzzleSocketName);
+	}
+
+	APawn *MyOwner = Cast<APawn>(GetOwner());
+
+	if (MyOwner)
+	{
+		APlayerController* PlayerController = Cast<APlayerController>(MyOwner->GetController());
+		if (PlayerController)
+		{
+			PlayerController->ClientPlayCameraShake(FireCamShake);
 		}
 	}
 }

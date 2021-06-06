@@ -28,11 +28,11 @@ ASCharacter::ASCharacter()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
 
 	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
-	HealthComp->DefaultHealth = 100.f;
+	HealthComp->DefaultHealth = 100.0f;
 	HealthComp->Health = HealthComp->DefaultHealth;
 
-	WalkingSpeed = 250.f;
-	RunningSpeed = 1500.f;
+	WalkingSpeed = 250.0f;
+	RunningSpeed = 1500.0f;
 	MaxStamina = 1.f;
 	Stamina = MaxStamina;
 	bRest = true;
@@ -40,11 +40,12 @@ ASCharacter::ASCharacter()
 
 	JumpCount = 1;
 	JumpMax = 1;
-	JumpHeight = 500.f;
-
-	GrenadeDelay = 1.f;
+	JumpHeight = 500.0f;
 
 	bGun = false;
+
+	ZoomFOV = 45.0f;
+	ZoomInterpSpeed = 20.0f;
 }
 
 // Called when the game starts or when spawned
@@ -53,6 +54,7 @@ void ASCharacter::BeginPlay()
 	Super::BeginPlay();
 	GetMesh()->HideBoneByName(TEXT("weapon_r"), EPhysBodyOp::PBO_None);
 	FtSwitchWeapon();
+	DefaultFOV = CameraComp->FieldOfView;
 	HealthComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
 }
 
@@ -103,7 +105,6 @@ void ASCharacter::Landed(const FHitResult &Hit)
 
 void ASCharacter::FtFire()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Fire"));
 	Gun->FtFire();
 }
 
@@ -127,6 +128,18 @@ void ASCharacter::FtSwitchWeapon()
 	Gun->SetOwner(this);
 }
 
+void ASCharacter::FtZoom() 
+{
+	if (bZoom)
+	{
+		bZoom = false;
+	}
+	else
+	{
+		bZoom = true;
+	}
+}
+
 void ASCharacter::OnHealthChanged(USHealthComponent *InHealthComp, float Health, float HealthDelta, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser)
 {
 	if (Health <= 0.0f && !bDead)
@@ -141,22 +154,16 @@ void ASCharacter::OnHealthChanged(USHealthComponent *InHealthComp, float Health,
 	}
 }
 
-void ASCharacter::FtGrenadeDelay()
-{
-	if (GrenadeDelay < 3)
-	{
-		GrenadeDelay += 1;
-	}
-	else
-	{
-		GrenadeDelay = 1;
-	}
-}
-
 // Called every frame
 void ASCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+
+	float TargetFOV = bZoom ? ZoomFOV : DefaultFOV;
+
+	float NewFOV = FMath::FInterpTo(CameraComp->FieldOfView, TargetFOV, DeltaTime, ZoomInterpSpeed);
+	CameraComp->SetFieldOfView(NewFOV);
 
 	if (Stamina <= 0)
 	{
@@ -198,9 +205,10 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputComponen
 
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASCharacter::FtFire);
 
-	PlayerInputComponent->BindAction("GrenadeDelay", IE_Pressed, this, &ASCharacter::FtGrenadeDelay);
-
 	PlayerInputComponent->BindAction("SwitchWeapon", IE_Pressed, this, &ASCharacter::FtSwitchWeapon);
+
+	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &ASCharacter::FtZoom);
+	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &ASCharacter::FtZoom);
 }
 
 void ASCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty> &OutLifetimeProps) const
