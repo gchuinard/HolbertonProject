@@ -53,7 +53,10 @@ void ASIATrackerBot::BeginPlay()
 {
 	Super::BeginPlay();
 
-	NextPathPoint = GetNextPathPoint();
+	if (HasAuthority())
+	{
+		NextPathPoint = GetNextPathPoint();
+	}
 }
 
 void ASIATrackerBot::FtHandleTakeDamage(USHealthComponent *InHealthComp, float Health, float HealthDelta, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser)
@@ -65,7 +68,6 @@ void ASIATrackerBot::FtHandleTakeDamage(USHealthComponent *InHealthComp, float H
 	}
 	if (MatInst)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Health %f"), Health);
 		MatInst->SetScalarParameterValue("LastTimeDamageTaken", GetWorld()->TimeSeconds);
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), BeepSound, GetActorLocation());
 	}
@@ -78,12 +80,12 @@ void ASIATrackerBot::FtHandleTakeDamage(USHealthComponent *InHealthComp, float H
 FVector ASIATrackerBot::GetNextPathPoint()
 {
 	ACharacter *PlayerPawn = UGameplayStatics::GetPlayerCharacter(this, 0);
-	
+
 	if (PlayerPawn)
 	{
 		UNavigationPath *NavPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), PlayerPawn);
 
-		if (NavPath->PathPoints.Num() > 1)
+		if (NavPath && NavPath->PathPoints.Num() > 1)
 		{
 			return NavPath->PathPoints[1];
 		}
@@ -116,34 +118,39 @@ void ASIATrackerBot::DamageSelf()
 void ASIATrackerBot::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	float DistanceToTarget = (GetActorLocation() - NextPathPoint).Size();
 
-	if (DistanceToTarget <= RequiredDistanceToTarget)
+	if (HasAuthority())
 	{
-		NextPathPoint = GetNextPathPoint();
-	}
-	else
-	{
-		if (bshot && !bStartedSelfDestruction)
+
+		float DistanceToTarget = (GetActorLocation() - NextPathPoint).Size();
+
+		if (DistanceToTarget <= RequiredDistanceToTarget)
 		{
-			int i = 100;
-			while (i > 0)
-			{
-				MovementForce = -500;
-				ForceDirection = NextPathPoint - GetActorLocation();
-				ForceDirection.Normalize();
-				ForceDirection *= MovementForce;
-				i--;
-				MeshComp->AddForce(ForceDirection, NAME_None, bUseVelocityChange);
-			}
-			bshot = false;
+			NextPathPoint = GetNextPathPoint();
 		}
-		MovementForce = 500;
-		ForceDirection = NextPathPoint - GetActorLocation();
-		ForceDirection.Normalize();
-		ForceDirection *= MovementForce;
+		else
+		{
+			if (bshot && !bStartedSelfDestruction)
+			{
+				int i = 100;
+				while (i > 0)
+				{
+					MovementForce = -500;
+					ForceDirection = NextPathPoint - GetActorLocation();
+					ForceDirection.Normalize();
+					ForceDirection *= MovementForce;
+					i--;
+					MeshComp->AddForce(ForceDirection, NAME_None, bUseVelocityChange);
+				}
+				bshot = false;
+			}
+			MovementForce = 750;
+			ForceDirection = NextPathPoint - GetActorLocation();
+			ForceDirection.Normalize();
+			ForceDirection *= MovementForce;
 
-		MeshComp->AddForce(ForceDirection, NAME_None, bUseVelocityChange);
+			MeshComp->AddForce(ForceDirection, NAME_None, bUseVelocityChange);
+		}
 	}
 }
 
@@ -155,7 +162,6 @@ void ASIATrackerBot::NotifyActorBeginOverlap(AActor *OtherActor)
 		if (PlayerPawn)
 		{
 			GetWorldTimerManager().SetTimer(TimerHandle_SelfDamage, this, &ASIATrackerBot::DamageSelf, 0.35f, true, 0.f);
-
 			bStartedSelfDestruction = true;
 		}
 	}

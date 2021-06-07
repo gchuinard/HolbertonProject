@@ -12,13 +12,13 @@ class UParticleSystem;
 class AProjectileBase;
 
 USTRUCT()
-struct FHitScanTrace
+struct FHitScanTraceGun
 {
 	GENERATED_BODY()
 
 public:
 	UPROPERTY()
-	FVector_NetQuantize TraceFrom;
+	TEnumAsByte<EPhysicalSurface> SurfaceType;
 	UPROPERTY()
 	FVector_NetQuantize TraceTo;
 };
@@ -34,6 +34,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void FtFire();
+
+	void FtFireEffect();
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void ServerFire();
@@ -75,12 +77,11 @@ protected:
 	float Damage;
 
 	UPROPERTY(ReplicatedUsing=OnRep_HitScanTrace)
-	FHitScanTrace HitScanTrace;
+	FHitScanTraceGun HitScanTrace;
 
 	UFUNCTION()
 	void OnRep_HitScanTrace();
 
-	void FtFireEffect();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<UCameraShakeBase> FireCamShake;

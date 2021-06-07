@@ -9,6 +9,17 @@
 
 class UProjectileMovementComponent;
 
+USTRUCT()
+struct FHitScanTrace
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY()
+	TEnumAsByte<EPhysicalSurface> SurfaceType;
+	UPROPERTY()
+	FVector_NetQuantize TraceTo;
+};
 UCLASS()
 class HOLBERTONPROJECT_API AProjectileBase : public AActor
 {
@@ -27,7 +38,10 @@ private:
 	float Damage = 34.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Effects")
-	UParticleSystem* HitParticle;
+	UParticleSystem* DefaultHitParticle;
+
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	UParticleSystem* FleshHitParticle;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
 	UParticleSystemComponent* ParticleTrail;
@@ -39,8 +53,6 @@ private:
 	TSubclassOf<UMatineeCameraShake> HitShake;
 
 
-	UFUNCTION()
-	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 
 public:	
@@ -57,4 +69,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	float DamageRadius;
 
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerOnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+	void FtImpactEffect(EPhysicalSurface SurfaceType);
 };

@@ -55,10 +55,16 @@ ASCharacter::ASCharacter()
 void ASCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
 	GetMesh()->HideBoneByName(TEXT("weapon_r"), EPhysBodyOp::PBO_None);
-	FtSwitchWeapon();
+
 	DefaultFOV = CameraComp->FieldOfView;
 	HealthComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
+
+	if (HasAuthority())
+	{
+		FtSwitchWeapon();
+	}
 }
 
 void ASCharacter::FtMoveForward(float Value)
@@ -112,7 +118,10 @@ void ASCharacter::Landed(const FHitResult &Hit)
 
 void ASCharacter::FtFire()
 {
-	Gun->FtFire();
+	if (Gun)
+	{
+		Gun->FtFire();
+	}
 }
 
 void ASCharacter::FtSwitchWeapon()

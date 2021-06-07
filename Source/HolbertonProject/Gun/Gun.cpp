@@ -67,6 +67,7 @@ void AGun::FtFireEffect()
 		UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, GunMesh, MuzzleSocketName);
 		UGameplayStatics::SpawnSoundAttached(MuzzleSound, GunMesh, MuzzleSocketName);
 	}
+	
 
 	APawn *MyOwner = Cast<APawn>(GetOwner());
 
@@ -75,13 +76,14 @@ void AGun::FtFireEffect()
 		APlayerController* PlayerController = Cast<APlayerController>(MyOwner->GetController());
 		if (PlayerController)
 		{
-			PlayerController->ClientPlayCameraShake(FireCamShake);
+			PlayerController->ClientStartCameraShake(FireCamShake);
 		}
 	}
 }
 
 void AGun::OnRep_HitScanTrace()
 {
+	
 }
 
 void AGun::ServerFire_Implementation()
