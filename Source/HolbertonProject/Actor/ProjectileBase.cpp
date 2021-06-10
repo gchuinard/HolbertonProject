@@ -25,7 +25,7 @@ AProjectileBase::AProjectileBase()
 	ParticleTrail = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("Particle Trail"));
 	ParticleTrail->SetupAttachment(RootComponent);
 
-	Rifle = true;
+	bRifle = true;
 
 	SetReplicates(true);
 	bNetLoadOnClient = true;
@@ -56,7 +56,7 @@ void AProjectileBase::OnHit(UPrimitiveComponent *HitComp, AActor *OtherActor, UP
 			QueryParams.AddIgnoredActor(this);
 			QueryParams.bReturnPhysicalMaterial = true;
 
-			if (Rifle)
+			if (bRifle)
 			{
 				UGameplayStatics::ApplyDamage(OtherActor, Damage, MyOwner->GetInstigatorController(), this, DamageType);
 			}

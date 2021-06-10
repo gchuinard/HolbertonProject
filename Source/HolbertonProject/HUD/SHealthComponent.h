@@ -17,13 +17,14 @@ public:
 	// Sets default values for this component's properties
 	USHealthComponent();
 
+	float FtGetHealth() const;
+	void FtSetHealth(float HP);
+
+	float FtGetDefaultHealth() const;
+	void FtSetDefaultHealth(float HealthMax);
+
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnHealthChangedSignature OnHealthChanged;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HealthComponent")
-	float Health;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HealthComponent")
-	float DefaultHealth;
 
 protected:
 	// Called when the game starts
@@ -33,4 +34,10 @@ protected:
 	UFUNCTION()
 	void FtHandleTakeAnyDamage(AActor *DamageActor, float Damage, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser);
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HealthComponent")
+	float Health;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HealthComponent")
+	float DefaultHealth;
+
+	bool bIsDead;
 };

@@ -64,7 +64,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
-	bool Rifle;
+	bool bRifle;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	float DamageRadius;

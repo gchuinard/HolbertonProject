@@ -31,8 +31,8 @@ ASCharacter::ASCharacter()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
 
 	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
-	HealthComp->DefaultHealth = 100.0f;
-	HealthComp->Health = HealthComp->DefaultHealth;
+	HealthComp->FtSetDefaultHealth(100.0f);
+	HealthComp->FtSetHealth(HealthComp->FtGetDefaultHealth());
 
 	WalkingSpeed = 250.0f;
 	RunningSpeed = 1500.0f;
@@ -204,9 +204,9 @@ void ASCharacter::Tick(float DeltaTime)
 			bBlockSprint = false;
 		}
 	}
-	if (!bDead && HealthComp->Health < HealthComp->DefaultHealth)
+	if (!bDead && HealthComp->FtGetHealth() < HealthComp->FtGetDefaultHealth())
 	{
-		HealthComp->Health = FMath::ClampAngle(HealthComp->Health + 0.05, 0.0f, HealthComp->DefaultHealth);
+		HealthComp->FtSetHealth(FMath::ClampAngle(HealthComp->FtGetHealth() + 0.05, 0.0f, HealthComp->FtGetDefaultHealth()));
 	}
 }
 

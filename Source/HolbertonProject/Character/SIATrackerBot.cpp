@@ -25,8 +25,8 @@ ASIATrackerBot::ASIATrackerBot()
 	RootComponent = MeshComp;
 
 	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
-	HealthComp->DefaultHealth = 45.f;
-	HealthComp->Health = HealthComp->DefaultHealth;
+	HealthComp->FtSetDefaultHealth(45.0f);
+	HealthComp->FtSetHealth(HealthComp->FtGetDefaultHealth());
 	HealthComp->OnHealthChanged.AddDynamic(this, &ASIATrackerBot::FtHandleTakeDamage);
 
 	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
@@ -37,13 +37,13 @@ ASIATrackerBot::ASIATrackerBot()
 	SphereComp->SetupAttachment(RootComponent);
 
 	bUseVelocityChange = false;
-	MovementForce = 500.f;
+	MovementForce = 1000.0f;
 
-	RequiredDistanceToTarget = 250.f;
+	RequiredDistanceToTarget = 250.0f;
 	bshot = false;
 
-	ExplosionDamage = 85.f;
-	ExplosionRadius = 800.f;
+	ExplosionDamage = 85.0f;
+	ExplosionRadius = 800.0f;
 
 	bStartedSelfDestruction = false;
 }
@@ -135,7 +135,7 @@ void ASIATrackerBot::Tick(float DeltaTime)
 				int i = 100;
 				while (i > 0)
 				{
-					MovementForce = -500;
+					MovementForce = -500.0f;
 					ForceDirection = NextPathPoint - GetActorLocation();
 					ForceDirection.Normalize();
 					ForceDirection *= MovementForce;
@@ -144,7 +144,7 @@ void ASIATrackerBot::Tick(float DeltaTime)
 				}
 				bshot = false;
 			}
-			MovementForce = 750;
+			MovementForce = 1000.0f;
 			ForceDirection = NextPathPoint - GetActorLocation();
 			ForceDirection.Normalize();
 			ForceDirection *= MovementForce;
@@ -161,7 +161,7 @@ void ASIATrackerBot::NotifyActorBeginOverlap(AActor *OtherActor)
 		ASCharacter *PlayerPawn = Cast<ASCharacter>(OtherActor);
 		if (PlayerPawn)
 		{
-			GetWorldTimerManager().SetTimer(TimerHandle_SelfDamage, this, &ASIATrackerBot::DamageSelf, 0.35f, true, 0.f);
+			GetWorldTimerManager().SetTimer(TimerHandle_SelfDamage, this, &ASIATrackerBot::DamageSelf, 0.35f, true, 0.0f);
 			bStartedSelfDestruction = true;
 		}
 	}

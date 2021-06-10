@@ -6,6 +6,11 @@
 #include "GameFramework/GameModeBase.h"
 #include "HolbertonProjectGameModeBase.generated.h"
 
+
+enum class EWaveState : uint8;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnActorKilled, AActor*, VictimActor, AActor*, KillerActor, AController*, KillerController);
+
 /**
  * 
  */
@@ -20,6 +25,8 @@ public:
 protected:
 	FTimerHandle TimerHandle_BotSpawner;
 
+	FTimerHandle TimerHandle_NextWaveStart;
+
 	int32 NbrOfBotsToSpawn;
 
 	int32 WaveCount;
@@ -28,17 +35,29 @@ protected:
 	float TimerBetweenWaves;
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode")
-	void SpawnNewBot();
+	void FtSpawnNewBot();
 
-	void SpawnBotTimerElapsed();
+	void FtSpawnBotTimerElapsed();
 
-	void StartWave();
+	void FtStartWave();
 
-	void EndWave();
+	void FtEndWave();
 
-	void PrepareForNextWave();
+	void FtPrepareForNextWave();
+
+	void FtCheckWaveState();
+
+	void FtCheckAnyPlayerAlive();
+
+	void FtGameOver();
+
+	void FtSetWaveState(EWaveState NewState);
 
 public:
 	virtual void StartPlay() override;
 
+	virtual void Tick(float DeltaSeconds) override;
+
+	UPROPERTY(BlueprintAssignable, Category = "GameMode")
+	FOnActorKilled OnActorKilled;
 };
