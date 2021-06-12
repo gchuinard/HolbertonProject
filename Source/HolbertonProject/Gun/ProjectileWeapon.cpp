@@ -10,35 +10,49 @@
 
 void AProjectileWeapon::FtFire()
 {
-	if (!HasAuthority())
+
+	UE_LOG(LogTemp, Warning, TEXT("Ammo Greande = %i"), Ammo)
+	if (Ammo > 0 && bCanFire)
 	{
-		ServerFire();
-	}
-
-	FtFireEffect();
-
-	APawn *OwnerPawn = Cast<APawn>(GetOwner());
-	if (OwnerPawn)
-	{
-		AController *OwnerController = OwnerPawn->GetController();
-
-		if (OwnerController && ProjectileClass)
+		if (!HasAuthority())
 		{
-			FVector EyeLocation;
-			FRotator EyeRotation;
-			FVector ShotDirection;
+			ServerFire();
+		}
 
-			FVector TraceEnd;
+		FtFireEffect();
 
-			OwnerController->GetPlayerViewPoint(EyeLocation, EyeRotation);
-			ShotDirection = EyeRotation.Vector();
-			TraceEnd = EyeLocation + (EyeRotation.Vector() * MaxRange);
+		APawn *OwnerPawn = Cast<APawn>(GetOwner());
+		if (OwnerPawn)
+		{
+			AController *OwnerController = OwnerPawn->GetController();
 
-			FVector SpawnLocation = ProjectileSpawnPoint->GetComponentLocation();
-			FRotator SpawnRotation = ProjectileSpawnPoint->GetComponentRotation();
-			AProjectileBase *TempProjectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass, SpawnLocation, EyeRotation);
+			if (OwnerController && ProjectileClass)
+			{
+				FVector EyeLocation;
+				FRotator EyeRotation;
 
-			TempProjectile->SetOwner(this);
+				OwnerController->GetPlayerViewPoint(EyeLocation, EyeRotation);
+
+				FVector MuzzleLocation = GunMesh->GetSocketLocation(MuzzleSocketName);
+
+				FVector ShotDirection = EyeRotation.Vector();
+
+				FActorSpawnParameters SpawnParams;
+				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+				FVector SpawnLocation = ProjectileSpawnPoint->GetComponentLocation();
+				AProjectileBase *TempProjectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass, MuzzleLocation, EyeRotation, SpawnParams);
+
+				TempProjectile->SetOwner(this);
+				Ammo--;
+			}
+		}
+	}
+	else
+	{
+		if (EmptyAmmoSound)
+		{
+			UGameplayStatics::SpawnSoundAttached(EmptyAmmoSound, GunMesh, MuzzleSocketName);
 		}
 	}
 }

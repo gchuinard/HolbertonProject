@@ -54,6 +54,7 @@ void AProjectileBase::OnHit(UPrimitiveComponent *HitComp, AActor *OtherActor, UP
 			FCollisionQueryParams QueryParams;
 			QueryParams.AddIgnoredActor(MyOwner);
 			QueryParams.AddIgnoredActor(this);
+			QueryParams.AddIgnoredActor(MyOwner->GetInstigatorController());
 			QueryParams.bReturnPhysicalMaterial = true;
 
 			if (bRifle)

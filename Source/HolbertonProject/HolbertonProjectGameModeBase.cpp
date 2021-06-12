@@ -44,8 +44,7 @@ void AHolbertonProjectGameModeBase::FtPrepareForNextWave()
 void AHolbertonProjectGameModeBase::FtCheckWaveState()
 {
     bool bIsPreparingForWave = GetWorldTimerManager().IsTimerActive(TimerHandle_NextWaveStart);
-    UE_LOG(LogTemp, Warning, TEXT("NbrOfBotsToSpawn = %i"), NbrOfBotsToSpawn);
-        UE_LOG(LogTemp, Warning, TEXT("bIsPreparingForWave = %i"), bIsPreparingForWave);
+
     if (NbrOfBotsToSpawn <= 0 && !bIsPreparingForWave)
     {
         bool bIsAnyBotAlive = false;
@@ -64,7 +63,6 @@ void AHolbertonProjectGameModeBase::FtCheckWaveState()
                 break;
             }
         }
-        UE_LOG(LogTemp, Warning, TEXT("bIsAnyBotAlive = %i"), bIsAnyBotAlive);
         if (!bIsAnyBotAlive)
         {
            FtSetWaveState(EWaveState::WaveComplete);

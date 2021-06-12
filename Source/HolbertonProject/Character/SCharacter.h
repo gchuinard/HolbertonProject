@@ -72,9 +72,9 @@ protected:
 	bool bGun;
 
 
-	void FtFire();
-
 	void FtSwitchWeapon();
+
+	void FtSwitchWeaponMode();
 
 	bool bZoom;
 	UPROPERTY(EditDefaultsOnly, Category = "Player")
@@ -100,6 +100,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Player")
 	USoundBase* JumpSound;
 
+	void FtReloading();
+
+	int32 BulletLeft;
+	int32 GrenadeLeft;
 
 public:
 	UPROPERTY(BlueprintReadOnly, Category = "Player")
@@ -110,4 +114,17 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent *PlayerInputComponent) override;
+	
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	void FtPullTrigger();
+
+	void FtPullTriggerAuto();
+	void FtStopPullTriggerAuto();
+	FTimerHandle TimerHandle_FireRate;
+
+	int32 FtGetBulletLeft();
+	void FtSetBulletLeft(int32 BulletInMag);
+
+	int32 FtGetGrenadeLeft();
+	void FtSetGrenadeLeft(int32 GrenadeInMag);
 };

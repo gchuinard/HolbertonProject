@@ -49,6 +49,8 @@ ASCharacter::ASCharacter()
 
 	ZoomFOV = 45.0f;
 	ZoomInterpSpeed = 20.0f;
+
+	BulletLeft = -1;
 }
 
 // Called when the game starts or when spawned
@@ -116,32 +118,96 @@ void ASCharacter::Landed(const FHitResult &Hit)
 	JumpCount = 0;
 }
 
-void ASCharacter::FtFire()
+void ASCharacter::FtPullTrigger()
 {
-	if (Gun)
+	if (Gun && !Gun->FtGetbAuto())
 	{
 		Gun->FtFire();
 	}
+	else if (Gun && Gun->FtGetbAuto())
+	{
+		GetWorldTimerManager().SetTimer(TimerHandle_FireRate, Gun, &AGun::FtFire, 0.1f, Gun->FtGetbAuto(), 0.0f);
+	}
+}
+
+void ASCharacter::FtStopPullTriggerAuto()
+{
+	GetWorldTimerManager().ClearTimer(TimerHandle_FireRate);
+}
+
+int32 ASCharacter::FtGetBulletLeft() 
+{
+	return BulletLeft;
+}
+
+void ASCharacter::FtSetBulletLeft(int32 BulletInMag) 
+{
+	BulletLeft = BulletInMag;
+}
+
+int32 ASCharacter::FtGetGrenadeLeft() 
+{
+	return GrenadeLeft;
+}
+
+void ASCharacter::FtSetGrenadeLeft(int32 GrenadeInMag) 
+{
+	GrenadeLeft = GrenadeInMag;
 }
 
 void ASCharacter::FtSwitchWeapon()
 {
 	if (Gun)
 	{
+		if (bGun)
+		{
+			BulletLeft = Gun->FtGetAmmo();
+		}
+		else
+		{
+			GrenadeLeft = Gun->FtGetAmmo();
+		}
+		Gun->Destroy();
+	}
+	if (BulletLeft == -1)
+	{
+		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
+		BulletLeft = Gun->FtGetFullMag();
+		Gun->Destroy();
+		Gun = GetWorld()->SpawnActor<AProjectileWeapon>(ProjectileWeaponClass);
+		GrenadeLeft = Gun->FtGetFullMag();
 		Gun->Destroy();
 	}
 	if (bGun)
 	{
 		Gun = GetWorld()->SpawnActor<AProjectileWeapon>(ProjectileWeaponClass);
+		Gun->FtSetAmmo(GrenadeLeft);
 		bGun = false;
 	}
 	else
 	{
 		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
+		Gun->FtSetAmmo(BulletLeft);
 		bGun = true;
 	}
 	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
 	Gun->SetOwner(this);
+	UE_LOG(LogTemp, Warning, TEXT("Ammo = %i"), Gun->FtGetAmmo());
+}
+
+void ASCharacter::FtSwitchWeaponMode()
+{
+	if (Gun)
+	{
+		if (Gun->FtGetbAuto())
+		{
+			Gun->FtSetbAuto(false);
+		}
+		else
+		{
+			Gun->FtSetbAuto(true);
+		}
+	}
 }
 
 void ASCharacter::FtZoom()
@@ -175,6 +241,10 @@ void ASCharacter::OnHealthChanged(USHealthComponent *InHealthComp, float Health,
 		bDead = true;
 		GetMovementComponent()->StopMovementImmediately();
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		if (Gun)
+		{
+			Gun->Destroy();
+		}
 
 		DetachFromControllerPendingDestroy();
 
@@ -182,11 +252,18 @@ void ASCharacter::OnHealthChanged(USHealthComponent *InHealthComp, float Health,
 	}
 }
 
+void ASCharacter::FtReloading()
+{
+	if (Gun)
+	{
+		Gun->FtReload();
+	}
+}
+
 // Called every frame
 void ASCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 	float TargetFOV = bZoom ? ZoomFOV : DefaultFOV;
 
 	float NewFOV = FMath::FInterpTo(CameraComp->FieldOfView, TargetFOV, DeltaTime, ZoomInterpSpeed);
@@ -230,9 +307,12 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputComponen
 	}
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::FtWalk);
 
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASCharacter::FtFire);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASCharacter::FtPullTrigger);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ASCharacter::FtStopPullTriggerAuto);
 
 	PlayerInputComponent->BindAction("SwitchWeapon", IE_Pressed, this, &ASCharacter::FtSwitchWeapon);
+	PlayerInputComponent->BindAction("SwitchWeaponMode", IE_Pressed, this, &ASCharacter::FtSwitchWeaponMode);
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ASCharacter::FtReloading);
 
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &ASCharacter::FtZoom);
 	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &ASCharacter::FtZoom);

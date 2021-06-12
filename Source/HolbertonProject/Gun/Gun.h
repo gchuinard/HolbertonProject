@@ -71,6 +71,9 @@ protected:
 	USoundBase *ImpactSound;
 
 	UPROPERTY(EditAnywhere)
+	USoundBase *EmptyAmmoSound;
+
+	UPROPERTY(EditAnywhere)
 	float MaxRange;
 
 	UPROPERTY(EditAnywhere)
@@ -85,4 +88,35 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
 	TSubclassOf<UCameraShakeBase> FireCamShake;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+	int32 Ammo;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+	int32 FullMag;
+
+	bool bAuto;
+	bool bCanFire;
+
+	void FtReloadAmmo();
+
+	FTimerHandle TimerHandle_ReloadTime;
+
+
+public:
+
+	bool FtGetbAuto();
+	void FtSetbAuto(bool Auto);
+
+	int32 FtGetFullMag();
+	void FtSetFullMag(int32 DefaultAmmo);
+
+	int32 FtGetAmmo();
+	UFUNCTION()
+	void FtSetAmmo(int32 NewAmmo);
+
+	bool FtGetbCanFire();
+	void FtSetbCanFire(bool Auto);
+	
+	void FtReload();
 };
