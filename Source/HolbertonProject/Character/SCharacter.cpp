@@ -51,6 +51,9 @@ ASCharacter::ASCharacter()
 	ZoomInterpSpeed = 20.0f;
 
 	BulletLeft = -1;
+	GrenadeLeft = -1;
+
+	bAuto = false;
 }
 
 // Called when the game starts or when spawned
@@ -162,6 +165,7 @@ void ASCharacter::FtSwitchWeapon()
 		if (bGun)
 		{
 			BulletLeft = Gun->FtGetAmmo();
+			bAuto = Gun->FtGetbAuto();
 		}
 		else
 		{
@@ -173,6 +177,7 @@ void ASCharacter::FtSwitchWeapon()
 	{
 		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
 		BulletLeft = Gun->FtGetFullMag();
+		bAuto = Gun->FtGetbAuto();
 		Gun->Destroy();
 		Gun = GetWorld()->SpawnActor<AProjectileWeapon>(ProjectileWeaponClass);
 		GrenadeLeft = Gun->FtGetFullMag();
@@ -188,6 +193,7 @@ void ASCharacter::FtSwitchWeapon()
 	{
 		Gun = GetWorld()->SpawnActor<AGun>(GunClass);
 		Gun->FtSetAmmo(BulletLeft);
+		Gun->FtSetbAuto(bAuto);
 		bGun = true;
 	}
 	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));

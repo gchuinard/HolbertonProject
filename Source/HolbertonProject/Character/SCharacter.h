@@ -105,6 +105,8 @@ protected:
 	int32 BulletLeft;
 	int32 GrenadeLeft;
 
+	bool bAuto;
+
 public:
 	UPROPERTY(BlueprintReadOnly, Category = "Player")
 	bool bDead;
