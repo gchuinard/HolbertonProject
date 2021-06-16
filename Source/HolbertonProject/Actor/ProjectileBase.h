@@ -59,6 +59,9 @@ public:
 	// Sets default values for this actor's properties
 	AProjectileBase();
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Team")
+	uint8 TeamProjectile;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

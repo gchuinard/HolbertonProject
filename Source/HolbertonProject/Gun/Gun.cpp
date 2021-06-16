@@ -9,6 +9,8 @@
 #include "../HolbertonProject.h"
 #include "Net/UnrealNetwork.h"
 #include "UObject/Object.h"
+#include "GameFramework/Character.h"
+#include "../Character/SCharacter.h"
 #include "../Actor/ProjectileBase.h"
 
 // Sets default values
@@ -21,7 +23,6 @@ AGun::AGun()
 	GunMesh->SetupAttachment(GunRoot);
 
 	MuzzleSocketName = TEXT("MuzzleSocket");
-	ShotSocketName = TEXT("ShotSocket");
 
 	MaxRange = 5000.f;
 	Damage = 34.f;
@@ -34,20 +35,31 @@ AGun::AGun()
 	bAuto = false;
 	bCanFire = true;
 
+	BulletSpread = 1.0f;
+
 	SetReplicates(true);
+}
+
+void AGun::FtFireAuto()
+{
+	if (!bSerie)
+	{
+		Serie = 0;
+		bSerie = true;
+	}
+	Serie++;
+	FtFire();
 }
 
 void AGun::FtFire()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Ammo Rifle = %i"), Ammo)
 	if (Ammo > 0 && bCanFire)
 	{
 		if (!HasAuthority())
 		{
 			ServerFire();
 		}
-		
-		FtFireEffect();
+
 		APawn *OwnerPawn = Cast<APawn>(GetOwner());
 		if (OwnerPawn)
 		{
@@ -55,27 +67,48 @@ void AGun::FtFire()
 
 			if (OwnerController && ProjectileClass)
 			{
+				FHitResult Hit;
+				AActor *HitActor;
+
 				FVector EyeLocation;
 				FRotator EyeRotation;
-
 				OwnerController->GetPlayerViewPoint(EyeLocation, EyeRotation);
 
-				FVector MuzzleLocation = GunMesh->GetSocketLocation(MuzzleSocketName);
+				FCollisionQueryParams QueryParams;
+				QueryParams.AddIgnoredActor(OwnerPawn);
+				QueryParams.AddIgnoredActor(this);
+				QueryParams.AddIgnoredActor(OwnerPawn->GetInstigatorController());
+				QueryParams.bReturnPhysicalMaterial = true;
 
 				FVector ShotDirection = EyeRotation.Vector();
+				FVector TraceEnd = EyeLocation + (ShotDirection * 15000);
+				if (GetWorld()->LineTraceSingleByChannel(Hit, EyeLocation, TraceEnd, COLLISION_WEAPON, QueryParams))
+				{
+					HitActor = Hit.GetActor();
+				}
+					FVector MuzzleLocation = GunMesh->GetSocketLocation(MuzzleSocketName);
 
-				//FActorSpawnParameters SpawnParams;
-				//SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+					if (bAuto)
+					{
+						BulletSpread = FtSerie();
+					}
+					float HalfRad = FMath::DegreesToRadians(BulletSpread);
+					ShotDirection = FMath::VRandCone(ShotDirection, HalfRad, HalfRad);
+					EyeRotation = ShotDirection.Rotation();
 
-				FVector SpawnLocation = ProjectileSpawnPoint->GetComponentLocation();
-				AProjectileBase *TempProjectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass, MuzzleLocation, EyeRotation);
+					//FActorSpawnParameters SpawnParams;
+					//SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-				TempProjectile->SetOwner(this);
-				Ammo--;
+					FVector SpawnLocation = ProjectileSpawnPoint->GetComponentLocation();
+					FtFireEffect();
+					AProjectileBase *TempProjectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass, MuzzleLocation, EyeRotation);
+
+					TempProjectile->SetOwner(this);
+					Ammo--;
 			}
 		}
 	}
-	else 
+	else
 	{
 		if (EmptyAmmoSound)
 		{
@@ -91,13 +124,12 @@ void AGun::FtFireEffect()
 		UGameplayStatics::SpawnEmitterAttached(MuzzleEffect, GunMesh, MuzzleSocketName);
 		UGameplayStatics::SpawnSoundAttached(MuzzleSound, GunMesh, MuzzleSocketName);
 	}
-	
 
 	APawn *MyOwner = Cast<APawn>(GetOwner());
 
 	if (MyOwner)
 	{
-		APlayerController* PlayerController = Cast<APlayerController>(MyOwner->GetController());
+		APlayerController *PlayerController = Cast<APlayerController>(MyOwner->GetController());
 		if (PlayerController)
 		{
 			PlayerController->ClientStartCameraShake(FireCamShake);
@@ -107,58 +139,93 @@ void AGun::FtFireEffect()
 
 void AGun::OnRep_HitScanTrace()
 {
-	
 }
 
-bool AGun::FtGetbCanFire() 
+bool AGun::FtGetbCanFire()
 {
 	return bCanFire;
 }
 
-void AGun::FtSetbCanFire(bool CanFire) 
+void AGun::FtSetbCanFire(bool CanFire)
 {
 	bCanFire = CanFire;
 }
 
-void AGun::FtReload() 
+void AGun::FtReload()
 {
 	bCanFire = false;
 	GetWorldTimerManager().SetTimer(TimerHandle_ReloadTime, this, &AGun::FtReloadAmmo, 3.0f, false, 3.0f);
 }
 
-void AGun::FtReloadAmmo() 
+bool AGun::FtGetbSerie()
+{
+	return bSerie;
+}
+
+void AGun::FtSetbSerie(bool InSerie)
+{
+	Serie = InSerie;
+}
+
+void AGun::FtReloadAmmo()
 {
 	Ammo = FtGetFullMag();
 	bCanFire = true;
 }
 
-bool AGun::FtGetbAuto() 
+float AGun::FtSerie()
+{
+	switch (Serie)
+	{
+	case 0:
+	case 1:
+	case 2:
+		return 1.5f;
+	case 3:
+	case 4:
+		return 2.0f;
+	case 5:
+	case 6:
+		return 2.5f;
+	case 7:
+	case 8:
+		return 3.0f;
+	case 9:
+	case 10:
+		return 3.5f;
+	default:
+		return 4.0f;
+	}
+	return 1.0f;
+}
+
+bool AGun::FtGetbAuto()
 {
 	return bAuto;
 }
 
-void AGun::FtSetbAuto(bool Auto) 
+void AGun::FtSetbAuto(bool Auto)
 {
 	bAuto = Auto;
 }
 
-int32 AGun::FtGetAmmo() 
+int32 AGun::FtGetAmmo()
 {
 	return Ammo;
 }
 
-void AGun::FtSetAmmo(int32 NewAmmo) 
+void AGun::FtSetAmmo(int32 NewAmmo)
 {
 	Ammo = NewAmmo;
 	bCanFire = true;
 }
 
-int32 AGun::FtGetFullMag() 
+int32 AGun::FtGetFullMag()
 {
 	return FullMag;
 }
 
-void AGun::FtSetFullMag(int32 DefaultAmmo) 
+void AGun::FtSetFullMag(int32 DefaultAmmo)
 {
 	FullMag = DefaultAmmo;
 }

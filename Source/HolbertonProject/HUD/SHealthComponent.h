@@ -23,9 +23,11 @@ public:
 	float FtGetDefaultHealth() const;
 	void FtSetDefaultHealth(float HealthMax);
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HealthComponent")
+	static bool IsFriendly(AActor *ActorA, AActor *ActorB);
+
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnHealthChangedSignature OnHealthChanged;
-
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

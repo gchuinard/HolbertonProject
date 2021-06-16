@@ -20,30 +20,15 @@ ASCharacter::ASCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
-	SpringArmComp->SetupAttachment(RootComponent);
-	SpringArmComp->SetRelativeLocation(FVector(0.f, 100.f, 80.f));
-	SpringArmComp->bUsePawnControlRotation = true;
-
-	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
-	CameraComp->SetupAttachment(SpringArmComp);
+	FtSetupCamera();
 
 	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
 
-	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
-	HealthComp->FtSetDefaultHealth(100.0f);
-	HealthComp->FtSetHealth(HealthComp->FtGetDefaultHealth());
+	FtSetupHealthComp();
 
-	WalkingSpeed = 250.0f;
-	RunningSpeed = 1500.0f;
-	MaxStamina = 1.f;
-	Stamina = MaxStamina;
-	bRest = true;
-	bBlockSprint = false;
+	FtSetupWalkAndRun();
 
-	JumpCount = 0;
-	JumpMax = 1;
-	JumpHeight = 500.0f;
+	FtSetupJump();
 
 	bGun = false;
 
@@ -54,6 +39,44 @@ ASCharacter::ASCharacter()
 	GrenadeLeft = -1;
 
 	bAuto = false;
+
+	TeamNum = 255;
+}
+
+void ASCharacter::FtSetupCamera() 
+{
+	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
+	SpringArmComp->SetupAttachment(RootComponent);
+	SpringArmComp->SetRelativeLocation(FVector(0.f, 100.f, 80.f));
+	SpringArmComp->bUsePawnControlRotation = true;
+	bCameraSideRight = true;
+
+	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
+	CameraComp->SetupAttachment(SpringArmComp);
+}
+
+void ASCharacter::FtSetupHealthComp() 
+{
+	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
+	HealthComp->FtSetDefaultHealth(100.0f);
+	HealthComp->FtSetHealth(HealthComp->FtGetDefaultHealth());
+}
+
+void ASCharacter::FtSetupWalkAndRun() 
+{
+	WalkingSpeed = 250.0f;
+	RunningSpeed = 1500.0f;
+	MaxStamina = 1.f;
+	Stamina = MaxStamina;
+	bRest = true;
+	bBlockSprint = false;
+}
+
+void ASCharacter::FtSetupJump() 
+{
+	JumpCount = 0;
+	JumpMax = 1;
+	JumpHeight = 500.0f;
 }
 
 // Called when the game starts or when spawned
@@ -65,7 +88,6 @@ void ASCharacter::BeginPlay()
 
 	DefaultFOV = CameraComp->FieldOfView;
 	HealthComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
-
 	if (HasAuthority())
 	{
 		FtSwitchWeapon();
@@ -129,13 +151,17 @@ void ASCharacter::FtPullTrigger()
 	}
 	else if (Gun && Gun->FtGetbAuto())
 	{
-		GetWorldTimerManager().SetTimer(TimerHandle_FireRate, Gun, &AGun::FtFire, 0.1f, Gun->FtGetbAuto(), 0.0f);
+		GetWorldTimerManager().SetTimer(TimerHandle_FireRate, Gun, &AGun::FtFireAuto, 0.1f, Gun->FtGetbAuto(), 0.0f);
 	}
 }
 
 void ASCharacter::FtStopPullTriggerAuto()
 {
 	GetWorldTimerManager().ClearTimer(TimerHandle_FireRate);
+	if (Gun)
+	{
+		Gun->FtSetbSerie(false);
+	}
 }
 
 int32 ASCharacter::FtGetBulletLeft() 
@@ -198,7 +224,6 @@ void ASCharacter::FtSwitchWeapon()
 	}
 	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
 	Gun->SetOwner(this);
-	UE_LOG(LogTemp, Warning, TEXT("Ammo = %i"), Gun->FtGetAmmo());
 }
 
 void ASCharacter::FtSwitchWeaponMode()

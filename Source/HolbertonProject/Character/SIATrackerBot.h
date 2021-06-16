@@ -24,6 +24,12 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void FtSetupMesh();
+
+	void FtSetupHealth();
+
+	void FtSetupSphere();
+
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UStaticMeshComponent *MeshComp;
 
@@ -76,4 +82,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void NotifyActorBeginOverlap(AActor *OtherActor) override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Team")
+	uint8 TeamTracker;
 };

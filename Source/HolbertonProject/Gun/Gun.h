@@ -10,6 +10,7 @@ class USkeletalMeshComponent;
 class UDamageType;
 class UParticleSystem;
 class AProjectileBase;
+class ASCharacter;
 
 USTRUCT()
 struct FHitScanTraceGun
@@ -34,6 +35,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	virtual void FtFire();
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	virtual void FtFireAuto();
 
 	void FtFireEffect();
 
@@ -60,16 +63,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projectile Type", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<AProjectileBase> ProjectileClass;
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-	FName ShotSocketName;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-	UParticleSystem *ShotEffect;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-	UParticleSystem *ImpactEffect;
-	UPROPERTY(EditAnywhere)
-	USoundBase *ImpactSound;
-
 	UPROPERTY(EditAnywhere)
 	USoundBase *EmptyAmmoSound;
 
@@ -95,13 +88,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	int32 FullMag;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon", meta = (ClampMin=0.0f))
+	float BulletSpread;
+
 	bool bAuto;
 	bool bCanFire;
 
 	void FtReloadAmmo();
 
-	FTimerHandle TimerHandle_ReloadTime;
+	float FtSerie();
+	int32 Serie;
+	bool bSerie;
 
+	FTimerHandle TimerHandle_ReloadTime;
 
 public:
 
@@ -119,4 +118,10 @@ public:
 	void FtSetbCanFire(bool Auto);
 	
 	void FtReload();
+
+	bool FtGetbSerie();
+	void FtSetbSerie(bool InSerie);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Team")
+	uint8 TeamGun;
 };

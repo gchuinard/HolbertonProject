@@ -21,6 +21,18 @@ public:
 	// Sets default values for this character's properties
 	ASCharacter();
 
+private:
+	void FtSetupCamera();
+
+	void FtSwitchCameraSide();
+	bool bCameraSideRight;
+
+	void FtSetupHealthComp();
+
+	void FtSetupWalkAndRun();
+
+	void FtSetupJump();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -129,4 +141,7 @@ public:
 
 	int32 FtGetGrenadeLeft();
 	void FtSetGrenadeLeft(int32 GrenadeInMag);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Team")
+	uint8 TeamNum;
 };

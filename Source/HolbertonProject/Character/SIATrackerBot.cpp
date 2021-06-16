@@ -19,22 +19,11 @@ ASIATrackerBot::ASIATrackerBot()
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
-	MeshComp->SetCanEverAffectNavigation(false);
-	MeshComp->SetSimulatePhysics(true);
-	RootComponent = MeshComp;
+	FtSetupMesh();
+	
+	FtSetupHealth();
 
-	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
-	HealthComp->FtSetDefaultHealth(45.0f);
-	HealthComp->FtSetHealth(HealthComp->FtGetDefaultHealth());
-	HealthComp->OnHealthChanged.AddDynamic(this, &ASIATrackerBot::FtHandleTakeDamage);
-
-	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
-	SphereComp->SetSphereRadius(400);
-	SphereComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	SphereComp->SetCollisionResponseToAllChannels(ECR_Ignore);
-	SphereComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-	SphereComp->SetupAttachment(RootComponent);
+	FtSetupSphere();
 
 	bUseVelocityChange = false;
 	MovementForce = 1000.0f;
@@ -57,6 +46,32 @@ void ASIATrackerBot::BeginPlay()
 	{
 		NextPathPoint = GetNextPathPoint();
 	}
+}
+
+void ASIATrackerBot::FtSetupMesh() 
+{
+	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
+	MeshComp->SetCanEverAffectNavigation(false);
+	MeshComp->SetSimulatePhysics(true);
+	RootComponent = MeshComp;
+}
+
+void ASIATrackerBot::FtSetupHealth() 
+{
+	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
+	HealthComp->FtSetDefaultHealth(45.0f);
+	HealthComp->FtSetHealth(HealthComp->FtGetDefaultHealth());
+	HealthComp->OnHealthChanged.AddDynamic(this, &ASIATrackerBot::FtHandleTakeDamage);
+}
+
+void ASIATrackerBot::FtSetupSphere()
+{
+	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
+	SphereComp->SetSphereRadius(400);
+	SphereComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	SphereComp->SetCollisionResponseToAllChannels(ECR_Ignore);
+	SphereComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	SphereComp->SetupAttachment(RootComponent);
 }
 
 void ASIATrackerBot::FtHandleTakeDamage(USHealthComponent *InHealthComp, float Health, float HealthDelta, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser)

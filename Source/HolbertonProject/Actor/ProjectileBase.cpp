@@ -7,6 +7,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "../HolbertonProject.h"
+#include "../Gun/Gun.h"
 
 // Sets default values
 AProjectileBase::AProjectileBase()
@@ -51,12 +52,6 @@ void AProjectileBase::OnHit(UPrimitiveComponent *HitComp, AActor *OtherActor, UP
 	{
 		if (OtherActor && OtherActor != this && OtherActor != MyOwner)
 		{
-			FCollisionQueryParams QueryParams;
-			QueryParams.AddIgnoredActor(MyOwner);
-			QueryParams.AddIgnoredActor(this);
-			QueryParams.AddIgnoredActor(MyOwner->GetInstigatorController());
-			QueryParams.bReturnPhysicalMaterial = true;
-
 			if (bRifle)
 			{
 				UGameplayStatics::ApplyDamage(OtherActor, Damage, MyOwner->GetInstigatorController(), this, DamageType);
