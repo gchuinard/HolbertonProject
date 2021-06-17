@@ -59,8 +59,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Stamina;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool bRest;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bBlockSprint;
 
 	UFUNCTION()
@@ -142,6 +140,11 @@ public:
 	int32 FtGetGrenadeLeft();
 	void FtSetGrenadeLeft(int32 GrenadeInMag);
 
+	float FtGetCharacterMovement();
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Team")
 	uint8 TeamNum;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bRest;
 };

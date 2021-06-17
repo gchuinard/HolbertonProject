@@ -88,8 +88,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	int32 FullMag;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon", meta = (ClampMin=0.0f))
-	float BulletSpread;
 
 	bool bAuto;
 	bool bCanFire;
@@ -124,4 +122,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Team")
 	uint8 TeamGun;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (ClampMin=0.0f))
+	float BulletSpread;
 };

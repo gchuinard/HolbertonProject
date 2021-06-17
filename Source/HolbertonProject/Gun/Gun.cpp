@@ -61,6 +61,7 @@ void AGun::FtFire()
 		}
 
 		APawn *OwnerPawn = Cast<APawn>(GetOwner());
+
 		if (OwnerPawn)
 		{
 			AController *OwnerController = OwnerPawn->GetController();
@@ -86,25 +87,26 @@ void AGun::FtFire()
 				{
 					HitActor = Hit.GetActor();
 				}
-					FVector MuzzleLocation = GunMesh->GetSocketLocation(MuzzleSocketName);
+				FVector MuzzleLocation = GunMesh->GetSocketLocation(MuzzleSocketName);
 
-					if (bAuto)
-					{
-						BulletSpread = FtSerie();
-					}
-					float HalfRad = FMath::DegreesToRadians(BulletSpread);
-					ShotDirection = FMath::VRandCone(ShotDirection, HalfRad, HalfRad);
-					EyeRotation = ShotDirection.Rotation();
+				if (bAuto)
+				{
+					BulletSpread = FtSerie();
+				}
+				UE_LOG(LogTemp, Warning, TEXT("Bullet Spread = %f"), BulletSpread);
+				float HalfRad = FMath::DegreesToRadians(BulletSpread);
+				ShotDirection = FMath::VRandCone(ShotDirection, HalfRad, HalfRad);
+				EyeRotation = ShotDirection.Rotation();
 
-					//FActorSpawnParameters SpawnParams;
-					//SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				//FActorSpawnParameters SpawnParams;
+				//SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-					FVector SpawnLocation = ProjectileSpawnPoint->GetComponentLocation();
-					FtFireEffect();
-					AProjectileBase *TempProjectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass, MuzzleLocation, EyeRotation);
+				FVector SpawnLocation = ProjectileSpawnPoint->GetComponentLocation();
+				FtFireEffect();
+				AProjectileBase *TempProjectile = GetWorld()->SpawnActor<AProjectileBase>(ProjectileClass, MuzzleLocation, EyeRotation);
 
-					TempProjectile->SetOwner(this);
-					Ammo--;
+				TempProjectile->SetOwner(this);
+				Ammo--;
 			}
 		}
 	}
@@ -183,18 +185,18 @@ float AGun::FtSerie()
 		return 1.5f;
 	case 3:
 	case 4:
-		return 2.0f;
+		return 2.5f;
 	case 5:
 	case 6:
-		return 2.5f;
+		return 3.0f;
 	case 7:
 	case 8:
-		return 3.0f;
+		return 4.0f;
 	case 9:
 	case 10:
-		return 3.5f;
+		return 5.0f;
 	default:
-		return 4.0f;
+		return 6.0f;
 	}
 	return 1.0f;
 }

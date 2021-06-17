@@ -91,14 +91,16 @@ void USHealthComponent::BeginPlay()
 	}
 
 	Health = DefaultHealth;
-	UE_LOG(LogTemp, Warning, TEXT("Begin Health = %f"), Health);
 }
 
 void USHealthComponent::FtHandleTakeAnyDamage(AActor *DamageActor, float Damage, const class UDamageType *DamageType, class AController *InstigatedBy, AActor *DamageCauser)
 {
-	UE_LOG(LogTemp, Warning, TEXT(" Damage = %f"), Damage);
-	if (Damage > 0 && !bIsDead && (!IsFriendly(DamageActor, DamageCauser) || DamageCauser == DamageActor))
+	if (Damage > 0 && !bIsDead)
 	{
+		if (DamageCauser != DamageActor && IsFriendly(DamageActor, DamageCauser))
+		{
+			Damage /= 1.3;
+		}
 		Health = FMath::Clamp(Health - Damage, 0.0f, DefaultHealth);
 
 		bIsDead = Health <= 0.0f;

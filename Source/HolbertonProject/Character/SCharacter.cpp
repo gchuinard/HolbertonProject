@@ -40,7 +40,7 @@ ASCharacter::ASCharacter()
 
 	bAuto = false;
 
-	TeamNum = 255;
+	TeamNum = 1;
 }
 
 void ASCharacter::FtSetupCamera() 
@@ -184,6 +184,11 @@ void ASCharacter::FtSetGrenadeLeft(int32 GrenadeInMag)
 	GrenadeLeft = GrenadeInMag;
 }
 
+float ASCharacter::FtGetCharacterMovement() 
+{
+	return GetCharacterMovement()->MaxWalkSpeed;
+}
+
 void ASCharacter::FtSwitchWeapon()
 {
 	if (Gun)
@@ -233,6 +238,7 @@ void ASCharacter::FtSwitchWeaponMode()
 		if (Gun->FtGetbAuto())
 		{
 			Gun->FtSetbAuto(false);
+			Gun->BulletSpread = 1.0;
 		}
 		else
 		{

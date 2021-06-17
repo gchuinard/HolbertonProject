@@ -51,11 +51,11 @@ void AHolbertonProjectGameModeBase::FtCheckWaveState()
         for (TActorIterator<APawn> It(GetWorld()); It; ++It)
         {
             APawn *TestPawn = *It;
-
             if (TestPawn == nullptr || TestPawn->IsPlayerControlled())
             {
                 continue;
             }
+
             USHealthComponent *HealthComp = Cast<USHealthComponent>(TestPawn->GetComponentByClass(USHealthComponent::StaticClass()));
             if (HealthComp && HealthComp->FtGetHealth() > 0.0f)
             {

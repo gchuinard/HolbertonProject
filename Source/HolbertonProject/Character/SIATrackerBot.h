@@ -76,6 +76,9 @@ protected:
 	UPROPERTY(EditAnywhere)
 	USoundBase *BeepSound;
 
+	FTimerHandle TimerHandle_RefreshPath;
+
+	void FtRefreshPath();
 
 public:	
 	// Called every frame
@@ -85,4 +88,5 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Team")
 	uint8 TeamTracker;
+
 };

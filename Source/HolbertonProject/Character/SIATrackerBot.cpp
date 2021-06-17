@@ -11,6 +11,8 @@
 #include "DrawDebugHelpers.h"
 #include "Components/SphereComponent.h"
 #include "SCharacter.h"
+#include "TimerManager.h"
+#include "EngineUtils.h"
 #include "Engine/EngineTypes.h"
 
 // Sets default values
@@ -20,7 +22,7 @@ ASIATrackerBot::ASIATrackerBot()
 	PrimaryActorTick.bCanEverTick = true;
 
 	FtSetupMesh();
-	
+
 	FtSetupHealth();
 
 	FtSetupSphere();
@@ -35,6 +37,8 @@ ASIATrackerBot::ASIATrackerBot()
 	ExplosionRadius = 800.0f;
 
 	bStartedSelfDestruction = false;
+
+	TeamTracker = 2;
 }
 
 // Called when the game starts or when spawned
@@ -48,7 +52,7 @@ void ASIATrackerBot::BeginPlay()
 	}
 }
 
-void ASIATrackerBot::FtSetupMesh() 
+void ASIATrackerBot::FtSetupMesh()
 {
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetCanEverAffectNavigation(false);
@@ -56,7 +60,7 @@ void ASIATrackerBot::FtSetupMesh()
 	RootComponent = MeshComp;
 }
 
-void ASIATrackerBot::FtSetupHealth() 
+void ASIATrackerBot::FtSetupHealth()
 {
 	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComp"));
 	HealthComp->FtSetDefaultHealth(45.0f);
@@ -100,6 +104,9 @@ FVector ASIATrackerBot::GetNextPathPoint()
 	{
 		UNavigationPath *NavPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), PlayerPawn);
 
+		GetWorldTimerManager().ClearTimer(TimerHandle_RefreshPath);
+		GetWorldTimerManager().SetTimer(TimerHandle_RefreshPath, this, &ASIATrackerBot::FtRefreshPath, 5.0f, false);
+
 		if (NavPath && NavPath->PathPoints.Num() > 1)
 		{
 			return NavPath->PathPoints[1];
@@ -127,6 +134,11 @@ void ASIATrackerBot::FtSelfDestruct()
 void ASIATrackerBot::DamageSelf()
 {
 	UGameplayStatics::ApplyDamage(this, 10, GetInstigatorController(), this, nullptr);
+}
+
+void ASIATrackerBot::FtRefreshPath() 
+{
+	NextPathPoint = GetNextPathPoint();
 }
 
 // Called every frame
@@ -174,7 +186,7 @@ void ASIATrackerBot::NotifyActorBeginOverlap(AActor *OtherActor)
 	if (!bStartedSelfDestruction)
 	{
 		ASCharacter *PlayerPawn = Cast<ASCharacter>(OtherActor);
-		if (PlayerPawn)
+		if (PlayerPawn && !USHealthComponent::IsFriendly(OtherActor, this))
 		{
 			GetWorldTimerManager().SetTimer(TimerHandle_SelfDamage, this, &ASIATrackerBot::DamageSelf, 0.35f, true, 0.0f);
 			bStartedSelfDestruction = true;
