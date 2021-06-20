@@ -44,6 +44,8 @@ protected:
 	UCameraComponent *CameraComp;
 
 	void FtMoveForward(float Value);
+	void FtMoveBackward(float Value);
+	void FtMoveLeft(float Value);
 	void FtMoveRight(float Value);
 
 	UFUNCTION()
@@ -78,7 +80,7 @@ protected:
 	TSubclassOf<AProjectileWeapon> ProjectileWeaponClass;
 	UPROPERTY(Replicated)
 	AGun *Gun;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gun")
 	bool bGun;
 
 
@@ -110,6 +112,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Player")
 	USoundBase* JumpSound;
 
+	UFUNCTION(BlueprintCallable, Category = "Player")
 	void FtReloading();
 
 	int32 BulletLeft;

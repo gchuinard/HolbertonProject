@@ -99,6 +99,16 @@ void ASCharacter::FtMoveForward(float Value)
 	AddMovementInput(GetActorForwardVector() * Value);
 }
 
+void ASCharacter::FtMoveBackward(float Value)
+{
+	AddMovementInput(GetActorForwardVector() * Value);
+}
+
+void ASCharacter::FtMoveLeft(float Value)
+{
+	AddMovementInput(GetActorRightVector() * Value);
+}
+
 void ASCharacter::FtMoveRight(float Value)
 {
 	AddMovementInput(GetActorRightVector() * Value);
@@ -330,6 +340,8 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent *PlayerInputComponen
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &ASCharacter::FtMoveForward);
+	PlayerInputComponent->BindAxis("MoveBackward", this, &ASCharacter::FtMoveBackward);
+	PlayerInputComponent->BindAxis("MoveLeft", this, &ASCharacter::FtMoveLeft);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ASCharacter::FtMoveRight);
 
 	PlayerInputComponent->BindAxis("LookUp", this, &ASCharacter::AddControllerPitchInput);
