@@ -13,6 +13,7 @@ AHolbertonProjectGameModeBase::AHolbertonProjectGameModeBase()
 
     GameStateClass = ASGameStateBase::StaticClass();
     PlayerStateClass = ASPlayerState::StaticClass();
+    bHorde = true;
 
     PrimaryActorTick.bCanEverTick = true;
     PrimaryActorTick.TickInterval = 2.0f;
@@ -22,7 +23,7 @@ void AHolbertonProjectGameModeBase::FtStartWave()
 {
     WaveCount++;
     NbrOfBotsToSpawn = 2 * WaveCount;
-    GetWorldTimerManager().SetTimer(TimerHandle_BotSpawner, this, &AHolbertonProjectGameModeBase::FtSpawnBotTimerElapsed, 0.1f, true, 10.0f);
+    GetWorldTimerManager().SetTimer(TimerHandle_BotSpawner, this, &AHolbertonProjectGameModeBase::FtSpawnBotTimerElapsed, 0.1f, true, 5.0f);
 
     FtSetWaveState(EWaveState::WaveInProgress);
 }
@@ -65,7 +66,7 @@ void AHolbertonProjectGameModeBase::FtCheckWaveState()
         }
         if (!bIsAnyBotAlive)
         {
-           FtSetWaveState(EWaveState::WaveComplete);
+            FtSetWaveState(EWaveState::WaveComplete);
 
             FtPrepareForNextWave();
         }
@@ -98,7 +99,7 @@ void AHolbertonProjectGameModeBase::FtGameOver()
     FtSetWaveState(EWaveState::GameOver);
 }
 
-void AHolbertonProjectGameModeBase::FtSetWaveState(EWaveState NewState) 
+void AHolbertonProjectGameModeBase::FtSetWaveState(EWaveState NewState)
 {
     ASGameStateBase *GameStateBase = GetGameState<ASGameStateBase>();
 
@@ -110,16 +111,22 @@ void AHolbertonProjectGameModeBase::FtSetWaveState(EWaveState NewState)
 
 void AHolbertonProjectGameModeBase::StartPlay()
 {
-    Super::StartPlay();
-    FtPrepareForNextWave();
+    if (bHorde)
+    {
+        Super::StartPlay();
+        FtPrepareForNextWave();
+    }
 }
 
 void AHolbertonProjectGameModeBase::Tick(float DeltaSeconds)
 {
-    Super::Tick(DeltaSeconds);
+    if (bHorde)
+    {
+        Super::Tick(DeltaSeconds);
 
-    FtCheckWaveState();
-    FtCheckAnyPlayerAlive();
+        FtCheckWaveState();
+        FtCheckAnyPlayerAlive();
+    }
 }
 
 void AHolbertonProjectGameModeBase::FtSpawnBotTimerElapsed()

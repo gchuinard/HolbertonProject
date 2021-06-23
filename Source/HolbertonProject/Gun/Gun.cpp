@@ -93,7 +93,6 @@ void AGun::FtFire()
 				{
 					BulletSpread = FtSerie();
 				}
-				UE_LOG(LogTemp, Warning, TEXT("Bullet Spread = %f"), BulletSpread);
 				float HalfRad = FMath::DegreesToRadians(BulletSpread);
 				ShotDirection = FMath::VRandCone(ShotDirection, HalfRad, HalfRad);
 				EyeRotation = ShotDirection.Rotation();

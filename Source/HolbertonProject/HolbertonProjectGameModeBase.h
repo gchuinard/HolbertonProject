@@ -27,9 +27,12 @@ protected:
 
 	FTimerHandle TimerHandle_NextWaveStart;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
 	int32 NbrOfBotsToSpawn;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
 	int32 WaveCount;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
+	bool bHorde;
 
 	UPROPERTY(EditDefaultsOnly, Category = "GameMode")
 	float TimerBetweenWaves;

@@ -121,7 +121,7 @@ protected:
 	bool bAuto;
 
 public:
-	UPROPERTY(BlueprintReadOnly, Category = "Player")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Player")
 	bool bDead;
 
 	// Called every frame

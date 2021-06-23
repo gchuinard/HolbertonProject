@@ -17,6 +17,7 @@ public:
 	// Sets default values for this component's properties
 	USHealthComponent();
 
+	UFUNCTION(BlueprintCallable, Category = "HealthComponent")
 	float FtGetHealth() const;
 	void FtSetHealth(float HP);
 
